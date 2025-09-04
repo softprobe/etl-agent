@@ -8,13 +8,20 @@ class ClaudeETLAgent:
         # Use provided work directory or default to current directory
         working_directory = work_dir or os.getcwd()
         
+        # Ensure we have an absolute path for the working directory
+        if not os.path.isabs(working_directory):
+            working_directory = os.path.abspath(working_directory)
+        
+        print(f"🔧 ClaudeETLAgent initialized with working directory: {working_directory}")
+        
         self.options = ClaudeCodeOptions(
-            system_prompt="""You are an expert ETL engineer specializing in JSON to BigQuery transformations.
+            system_prompt=f"""You are an expert ETL engineer specializing in JSON to BigQuery transformations.
 
 UPLOADED FILES CONTEXT:
-- Sample JSON files may be uploaded to the current working directory
-- When users ask about analyzing data, check for .json files in the current directory
+- JSON files are located in the uploads directory: {working_directory}
+- When users ask about analyzing data, check for .json files in the uploads directory
 - Use file analysis tools to understand JSON structure before making recommendations
+- IMPORTANT: The working directory is set to: {working_directory}
 
 Your responsibilities:
 1. Analyze JSON data structures and infer optimal BigQuery table schemas
@@ -40,9 +47,45 @@ Available tools: Read files, analyze JSON structure, generate code, create schem
 """,
             allowed_tools=["Bash", "Glob", "Grep", "LS", "Read", "Edit", "MultiEdit", "Write", "NotebookEdit", "WebFetch", "TodoWrite", "WebSearch", "BashOutput", "KillBash"],
             permission_mode="acceptEdits",
-            max_turns=10,
-            cwd=working_directory  # Use uploads directory for file operations
+            max_turns=5,
+            model="claude-3-5-sonnet-20241022",
+            cwd=working_directory,  # Use uploads directory for file operations
+            add_dirs=[working_directory]  # Also add the uploads directory to context
         )
+        
+        # Initialize persistent client for multi-turn conversations
+        self.client = None
+        self.is_client_active = False
+    
+    async def _ensure_client(self):
+        """Ensure we have an active Claude client for persistent conversations"""
+        if not self.is_client_active or self.client is None:
+            self.client = ClaudeSDKClient(options=self.options)
+            await self.client.__aenter__()
+            self.is_client_active = True
+            print("🔄 Created new persistent Claude client for multi-turn conversation")
+    
+    async def _close_client(self):
+        """Close the persistent Claude client"""
+        if self.is_client_active and self.client is not None:
+            try:
+                await self.client.__aexit__(None, None, None)
+            except Exception as e:
+                print(f"Warning: Error closing Claude client: {e}")
+            finally:
+                self.client = None
+                self.is_client_active = False
+                print("🔒 Closed persistent Claude client")
+    
+    async def start_new_conversation(self):
+        """Start a fresh conversation by closing the current client"""
+        await self._close_client()
+        await self._ensure_client()
+        print("🆕 Started new conversation session")
+    
+    async def cleanup(self):
+        """Clean up resources when the agent is no longer needed"""
+        await self._close_client()
     
     async def generate_ddl(self, json_schemas: List[str], table_name: str, 
                           dataset_id: str, user_requirements: str) -> str:
@@ -113,22 +156,169 @@ Available tools: Read files, analyze JSON structure, generate code, create schem
         
         return '\n'.join(result)
     
-    async def chat_stream(self, user_message: str) -> AsyncIterator[Dict[str, Any]]:
-        """Stream chat responses for real-time interaction"""
+    def _serialize_content_block(self, block) -> Dict[str, Any]:
+        """Serialize individual content blocks based on their type"""
+        block_type = type(block).__name__
         
-        async with ClaudeSDKClient(options=self.options) as client:
-            # Send user message to Claude
-            await client.query(user_message)
+        if block_type == 'TextBlock':
+            return {
+                'type': 'text',
+                'text': block.text
+            }
+        elif block_type == 'ToolUseBlock':
+            return {
+                'type': 'tool_use',
+                'id': block.id,
+                'name': block.name,
+                'input': block.input
+            }
+        elif block_type == 'ToolResultBlock':
+            return {
+                'type': 'tool_result',
+                'tool_use_id': block.tool_use_id,
+                'content': block.content,
+                'is_error': block.is_error
+            }
+        elif block_type == 'ThinkingBlock':
+            return {
+                'type': 'thinking',
+                'thinking': block.thinking,
+                'signature': block.signature
+            }
+        else:
+            # Fallback for unknown block types
+            return {
+                'type': 'unknown',
+                'content': str(block)
+            }
+
+    def _serialize_message(self, message) -> Dict[str, Any]:
+        """Convert Claude message objects to JSON-serializable dictionaries"""
+        try:
+            # Debug: Print the message type and attributes
+            print(f"Serializing message type: {type(message)}")
+            
+            # Handle different message types based on their class names
+            message_type = type(message).__name__
+            
+            if message_type == 'SystemMessage':
+                # Handle SystemMessage - has subtype and data fields
+                result = {
+                    'type': 'system',
+                    'subtype': message.subtype,
+                    'data': message.data
+                }
+                return result
+                
+            elif message_type == 'AssistantMessage':
+                # Handle AssistantMessage - has content (list of ContentBlocks) and model
+                result = {
+                    'type': 'assistant',
+                    'content': [],
+                    'model': message.model
+                }
+                
+                # Process content blocks
+                if message.content:
+                    for block in message.content:
+                        serialized_block = self._serialize_content_block(block)
+                        result['content'].append(serialized_block)
+                
+                return result
+                
+            elif message_type == 'UserMessage':
+                # Handle UserMessage - has content (string or list of ContentBlocks)
+                result = {
+                    'type': 'user',
+                    'content': []
+                }
+                
+                if isinstance(message.content, str):
+                    # Simple string content
+                    result['content'] = message.content
+                elif isinstance(message.content, list):
+                    # List of content blocks
+                    for block in message.content:
+                        serialized_block = self._serialize_content_block(block)
+                        result['content'].append(serialized_block)
+                else:
+                    result['content'] = str(message.content)
+                
+                return result
+                
+            elif message_type == 'ResultMessage':
+                # Handle ResultMessage - has cost and usage information
+                result = {
+                    'type': 'result',
+                    'subtype': message.subtype,
+                    'duration_ms': message.duration_ms,
+                    'duration_api_ms': message.duration_api_ms,
+                    'is_error': message.is_error,
+                    'num_turns': message.num_turns,
+                    'session_id': message.session_id,
+                    'total_cost_usd': message.total_cost_usd,
+                    'usage': message.usage,
+                    'result': message.result
+                }
+                return result
+                
+            else:
+                # Fallback: try to convert to dict and handle any non-serializable values
+                if hasattr(message, '__dict__'):
+                    message_dict = {}
+                    for key, value in message.__dict__.items():
+                        if isinstance(value, (str, int, float, bool, type(None))):
+                            message_dict[key] = value
+                        elif isinstance(value, (list, dict)):
+                            message_dict[key] = value
+                        else:
+                            message_dict[key] = str(value)
+                    
+                    # Add message type
+                    message_dict['type'] = 'unknown'
+                    return message_dict
+                else:
+                    return {
+                        'type': 'unknown',
+                        'content': str(message)
+                    }
+                    
+        except Exception as e:
+            print(f"Error serializing message: {e}")
+            print(f"Message type: {type(message)}")
+            return {
+                'type': 'error',
+                'content': f"Error processing message: {str(e)}"
+            }
+
+    async def chat_stream(self, user_message: str) -> AsyncIterator[Dict[str, Any]]:
+        """Stream chat responses for real-time interaction with persistent conversation"""
+        
+        # Ensure we have an active client for multi-turn conversations
+        await self._ensure_client()
+        
+        try:
+            # Send user message to Claude using the persistent client
+            await self.client.query(user_message)
             
             # Stream responses back
-            async for message in client.receive_response():
-                if isinstance(message, dict):
-                    yield message
-                else:
-                    yield {
-                        "type": "text", 
-                        "content": str(message)
-                    }
+            async for message in self.client.receive_response():
+                # Serialize the message before yielding
+                serialized_message = self._serialize_message(message)
+                yield serialized_message
+                
+        except Exception as e:
+            print(f"Error in chat_stream: {e}")
+            # If there's an error, try to recover by creating a new client
+            await self._close_client()
+            await self._ensure_client()
+            
+            # Send error message to client
+            error_message = {
+                'type': 'error',
+                'content': f"Chat error occurred, but conversation will continue: {str(e)}"
+            }
+            yield error_message
     
     async def analyze_json_for_schema(self, json_data: List[Dict[str, Any]]) -> Dict[str, Any]:
         """Analyze JSON data and suggest table schema"""

@@ -1,12 +1,13 @@
-from fastapi import FastAPI, UploadFile, File, WebSocket
+from fastapi import FastAPI, UploadFile, File, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import json
 import asyncio
 import os
 import shutil
 from pathlib import Path
+import mimetypes
 
 from .services.claude_service import ClaudeETLAgent
 from .models.etl import DDLRequest, UploadResponse
@@ -27,15 +28,18 @@ async def startup_tasks():
     if WORK_DIR.exists():
         shutil.rmtree(WORK_DIR)
     WORK_DIR.mkdir(exist_ok=True)
-    print(f"📁 Created clean working directory: {WORK_DIR.absolute()}")
+    work_dir = WORK_DIR.absolute()
+    print(f"📁 Created clean working directory: {work_dir}")
+    # Set the current director to the WORK_DIR
+    os.chdir(work_dir)   
     
     # Initialize Claude agent with uploads directory
-    claude_agent = ClaudeETLAgent(work_dir=str(WORK_DIR.absolute()))
-    print(f"🤖 Initialized Claude ETL Agent")
+    claude_agent = ClaudeETLAgent(work_dir=str(work_dir))
+    print(f"🤖 Initialized Claude ETL Agent with working directory: {work_dir}")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,7 +57,7 @@ async def upload_files(files: List[UploadFile] = File(...)):
                 continue
                 
             content = await file.read()
-            file_path = WORK_DIR / file.filename
+            file_path = file.filename
             
             with open(file_path, 'wb') as f:
                 f.write(content)
@@ -111,7 +115,7 @@ async def generate_etl(request: DDLRequest):
 
 @app.websocket("/ws/chat")
 async def chat_endpoint(websocket: WebSocket):
-    """Real-time chat with Claude for ETL guidance"""
+    """Real-time chat with Claude for ETL guidance with persistent conversations"""
     await websocket.accept()
     
     try:
@@ -119,17 +123,134 @@ async def chat_endpoint(websocket: WebSocket):
             # Receive user message
             user_input = await websocket.receive_text()
             
-            # Process with Claude
+            # Check for special commands
+            if user_input.startswith("/"):
+                if user_input == "/new":
+                    # Start a new conversation
+                    await claude_agent.start_new_conversation()
+                    await websocket.send_text(json.dumps({
+                        "type": "system",
+                        "content": "Started new conversation session"
+                    }))
+                    continue
+                elif user_input == "/status":
+                    # Send conversation status
+                    status = {
+                        "type": "system",
+                        "content": f"Conversation active: {claude_agent.is_client_active}"
+                    }
+                    await websocket.send_text(json.dumps(status))
+                    continue
+            
+            # Process with Claude and send responses
             async for response in claude_agent.chat_stream(user_input):
-                await websocket.send_text(json.dumps(response))
+                try:
+                    # Ensure response is JSON serializable
+                    serialized_response = json.dumps(response, default=str)
+                    await websocket.send_text(serialized_response)
+                except Exception as serialize_error:
+                    print(f"Serialization error: {serialize_error}")
+                    # Send error message to client
+                    error_response = {
+                        "type": "error",
+                        "content": f"Error processing response: {str(serialize_error)}"
+                    }
+                    await websocket.send_text(json.dumps(error_response))
                 
     except Exception as e:
-        await websocket.send_text(json.dumps({
-            "type": "error",
-            "content": f"Chat error: {str(e)}"
-        }))
+        print(f"WebSocket error: {e}")
+        # Try to send error message to client, but don't worry if it fails
+        try:
+            await websocket.send_text(json.dumps({
+                "type": "error",
+                "content": f"Chat error: {str(e)}"
+            }))
+        except Exception:
+            pass  # Client disconnected, ignore
     finally:
-        await websocket.close()
+        # Clean up when WebSocket closes
+        try:
+            await claude_agent.cleanup()
+        except Exception as cleanup_error:
+            print(f"Cleanup error: {cleanup_error}")
+
+@app.get("/api/files")
+async def list_files():
+    """Simple directory listing"""
+    import os
+    files = []
+    for root, dirs, filenames in os.walk("."):
+        # Skip hidden and common ignore patterns
+        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['__pycache__', 'node_modules']]
+        for filename in filenames:
+            if not filename.startswith('.'):
+                filepath = os.path.join(root, filename)
+                files.append({
+                    "id": filepath,
+                    "name": filename, 
+                    "path": filepath,
+                    "isFolder": False
+                })
+    return files
+
+@app.get("/api/file/{file_path:path}")
+async def get_file(file_path: str):
+    """Read file content"""
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return {"content": f.read(), "path": file_path}
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+@app.post("/api/file/{file_path:path}")
+async def save_file(file_path: str, content: dict):
+    """Save file content"""
+    try:
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content.get("content", ""))
+        return {"success": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/chat/new-session")
+async def start_new_chat_session():
+    """Start a new chat conversation session"""
+    try:
+        await claude_agent.start_new_conversation()
+        return {"status": "success", "message": "New conversation session started"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to start new session: {str(e)}"}
+        )
+
+@app.get("/api/chat/status")
+async def get_chat_status():
+    """Get the current chat session status"""
+    try:
+        return {
+            "status": "success",
+            "is_active": claude_agent.is_client_active,
+            "message": "Chat session is active" if claude_agent.is_client_active else "No active chat session"
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to get chat status: {str(e)}"}
+        )
+
+@app.post("/api/chat/cleanup")
+async def cleanup_chat_session():
+    """Clean up the current chat session"""
+    try:
+        await claude_agent.cleanup()
+        return {"status": "success", "message": "Chat session cleaned up"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to cleanup session: {str(e)}"}
+        )
 
 @app.get("/health")
 async def health_check():
