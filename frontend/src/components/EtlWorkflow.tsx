@@ -142,13 +142,13 @@ export const EtlWorkflow: React.FC = () => {
 
     switch (status) {
       case 'completed':
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
+        return <CheckCircle className="h-4 w-4 text-white" />;
       case 'current':
-        return <Circle className="h-5 w-5 text-blue-600" />;
+        return <Circle className="h-4 w-4 text-white" />;
       case 'loading':
-        return <Clock className="h-5 w-5 text-blue-600 animate-pulse" />;
+        return <Clock className="h-4 w-4 text-white animate-pulse" />;
       default:
-        return <Circle className="h-5 w-5 text-gray-400" />;
+        return <Circle className="h-4 w-4 text-gray-500" />;
     }
   };
 
@@ -160,7 +160,7 @@ export const EtlWorkflow: React.FC = () => {
           <Card className="h-full border-0 !bg-[#FCFBF8]">
             <CardHeader
               className="flex-row items-center justify-between space-y-0"
-              style={{ height: '48px', padding: '8px' }}
+              style={{ height: '60px', padding: '16px' }}
             >
               <CardTitle
                 className="!text-xl !font-bold"
@@ -215,7 +215,10 @@ export const EtlWorkflow: React.FC = () => {
         </ResizablePanel>
 
         {/* Resize Handle */}
-        <ResizableHandle withHandle={false} />
+        <ResizableHandle 
+          withHandle={false} 
+          className="w-1 bg-transparent hover:w-1 my-12 hover:bg-gradient-to-b hover:from-transparent hover:via-blue-500 hover:to-transparent transition-all duration-200 group"
+        />
 
         {/* Right Side - Main Content */}
         <ResizablePanel defaultSize={40} minSize={20} maxSize={70}>
@@ -225,7 +228,7 @@ export const EtlWorkflow: React.FC = () => {
             <div
               className="px-2 py-4"
             >
-              <h1 className="text-xl font-bold">Agentic ETL Engineer</h1>
+              <h1 className="text-xl font-bold">Softprobe Agentic ETL Engineer</h1>
               <div className="text-xs">
                 Transform your JSON data into BigQuery tables with AI assistance
               </div>
@@ -233,28 +236,34 @@ export const EtlWorkflow: React.FC = () => {
 
             {/* Progress Steps */}
             <CardContent className="pb-6 px-6">
-              <div className="space-y-4">
-                {WORKFLOW_STEPS.map((step) => (
-                  <div key={step.id} className="flex items-start space-x-4">
-                    <div className={`p-2 rounded-xl border ${getStepStatus(step.id) === 'completed'
-                      ? 'border-green-400 bg-green-50'
-                      : getStepStatus(step.id) === 'current'
-                        ? 'border-blue-400 bg-blue-50'
-                        : 'border-gray-200 bg-gray-50'
-                      }`}>
-                      {getStepIcon(step.id)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium ${getStepStatus(step.id) === 'current'
-                        ? 'text-blue-600'
-                        : 'text-gray-700'
+              <div className="bg-gray-100 rounded-2xl p-6">
+                <div className="relative flex items-center justify-between">
+                  {WORKFLOW_STEPS.map((step) => (
+                    <div key={step.id} className="flex flex-col items-center space-y-2 relative z-10">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${getStepStatus(step.id) === 'completed'
+                        ? 'border-green-500 bg-green-500'
+                        : getStepStatus(step.id) === 'current'
+                          ? 'border-blue-500 bg-blue-500'
+                          : 'border-gray-300 bg-gray-200'
                         }`}>
-                        {step.label}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">{step.description}</p>
+                        {getStepIcon(step.id)}
+                      </div>
+                      <div className="text-center">
+                        <p className={`text-xs font-medium ${getStepStatus(step.id) === 'current'
+                          ? 'text-blue-600'
+                          : getStepStatus(step.id) === 'completed'
+                            ? 'text-green-600'
+                            : 'text-gray-500'
+                          }`}>
+                          {step.label}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">{step.description}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                  {/* 连接线 */}
+                  <div className="absolute top-4 left-8 right-8 h-0.5 bg-gray-300 -z-10"></div>
+                </div>
               </div>
             </CardContent>
 
