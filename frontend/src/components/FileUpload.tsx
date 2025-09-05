@@ -1,6 +1,9 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, File, X, AlertCircle } from 'lucide-react';
+import { Upload, File, X, AlertCircle, Plus } from 'lucide-react';
 import type { UploadedFile } from '../types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface FileUploadProps {
   onFilesUpload: (files: File[]) => void;
@@ -17,6 +20,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -37,7 +41,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       const files = Array.from(e.dataTransfer.files).filter(
         file => file.type === 'application/json' || file.name.endsWith('.json')
       );
-      setSelectedFiles(files);
+      setSelectedFiles(prev => [...prev, ...files]);
     }
   }, []);
 
@@ -45,8 +49,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
       const files = Array.from(e.target.files);
-      setSelectedFiles(files);
+      setSelectedFiles(prev => [...prev, ...files]);
     }
+    // Reset the input value so the same file can be selected again
+    e.target.value = '';
   }, []);
 
   const handleUpload = () => {
@@ -61,126 +67,155 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          Upload JSON Files
-        </h2>
-        <p className="text-gray-600">
-          Upload your JSON data files to generate BigQuery schema and ETL code
-        </p>
-      </div>
+    <div className="w-full max-w-4xl mx-auto">
+      <Card>
+        <CardHeader className="pb-6">
+          <CardTitle className="text-md">Upload JSON Files</CardTitle>
+          <CardDescription className="text-xs">
+            Upload your JSON data files to generate BigQuery schema and ETL code
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
 
-      {/* Drag and Drop Area */}
-      <div
-        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
-          dragActive
-            ? 'border-blue-400 bg-blue-50'
-            : 'border-gray-300 hover:border-gray-400'
-        }`}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <input
-          type="file"
-          multiple
-          accept=".json"
-          onChange={handleChange}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          disabled={loading}
-        />
-        
-        <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">
-          Drop JSON files here, or click to browse
-        </h3>
-        <p className="text-sm text-gray-500">
-          Supports .json files up to 100MB each
-        </p>
-      </div>
+          {/* Drag and Drop Area - Only show when no files selected */}
+          {selectedFiles.length === 0 && (
+            <div
+              className={`relative border border-dashed rounded-xl p-8 text-center transition-colors ${
+                dragActive
+                  ? 'border-blue-300 bg-blue-50/50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+              <input
+                type="file"
+                multiple
+                accept=".json"
+                onChange={handleChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={loading}
+              />
+              
+              <Upload className="mx-auto h-10 w-10 text-gray-300 mb-3" />
+              <h3 className="text-sm font-medium text-gray-700 mb-1">
+                Drop JSON files here, or click to browse
+              </h3>
+              <p className="text-xs text-gray-400">
+                Supports .json files up to 100MB each
+              </p>
+            </div>
+          )}
 
-      {/* Error Display */}
-      {error && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-          <div className="flex items-center">
-            <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
-        </div>
-      )}
+          {/* Error Display */}
+          {error && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertCircle className="h-3.5 w-3.5" />
+              <AlertDescription className="text-xs">
+                {error}
+              </AlertDescription>
+            </Alert>
+          )}
 
-      {/* Selected Files */}
-      {selectedFiles.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-3">
-            Selected Files ({selectedFiles.length})
-          </h3>
-          <div className="space-y-2">
-            {selectedFiles.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-gray-50 rounded-md"
-              >
-                <div className="flex items-center">
-                  <File className="h-5 w-5 text-gray-400 mr-3" />
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {file.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
+          {/* Selected Files */}
+          {selectedFiles.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-4">
+                Selected Files ({selectedFiles.length})
+              </h3>
+              <div className="space-y-3">
+                {selectedFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2.5 bg-gray-50 rounded-xl border border-gray-100"
+                  >
+                    <div className="flex items-center">
+                      <File className="h-4 w-4 text-gray-400 mr-2" />
+                      <div>
+                        <p className="text-xs font-medium text-gray-700">
+                          {file.name}
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(index)}
+                      className="text-gray-400 hover:text-red-500 h-8 w-8 p-0"
+                      disabled={loading}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
                   </div>
-                </div>
-                <button
-                  onClick={() => removeFile(index)}
-                  className="text-gray-400 hover:text-red-500 transition-colors"
+                ))}
+              </div>
+              
+              {/* Add More Files Button - Show below file list */}
+              <div className="flex justify-center mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
                   disabled={loading}
+                  className="flex items-center gap-2 text-xs"
                 >
-                  <X className="h-5 w-5" />
-                </button>
+                  <Plus className="h-4 w-4" />
+                  Add More Files
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".json"
+                  onChange={handleChange}
+                  className="hidden"
+                  disabled={loading}
+                />
               </div>
-            ))}
-          </div>
-          
-          <button
-            onClick={handleUpload}
-            disabled={loading || selectedFiles.length === 0}
-            className="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? 'Uploading...' : `Upload ${selectedFiles.length} Files`}
-          </button>
-        </div>
-      )}
-
-      {/* Uploaded Files */}
-      {uploadedFiles.length > 0 && (
-        <div className="mt-6">
-          <h3 className="text-lg font-medium text-gray-900 mb-3">
-            Uploaded Files ({uploadedFiles.length})
-          </h3>
-          <div className="space-y-2">
-            {uploadedFiles.map((file, index) => (
-              <div
-                key={index}
-                className="flex items-center p-3 bg-green-50 border border-green-200 rounded-md"
+              
+              <Button
+                onClick={handleUpload}
+                disabled={loading || selectedFiles.length === 0}
+                className="mt-6 w-full text-xs font-medium"
               >
-                <File className="h-5 w-5 text-green-600 mr-3" />
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {file.filename}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB • Uploaded
-                  </p>
-                </div>
+                {loading ? 'Uploading...' : `Upload ${selectedFiles.length} Files`}
+              </Button>
+            </div>
+          )}
+
+          {/* Uploaded Files */}
+          {uploadedFiles.length > 0 && (
+            <div>
+              <h3 className="text-sm font-medium text-gray-700 mb-4">
+                Uploaded Files ({uploadedFiles.length})
+              </h3>
+              <div className="space-y-3">
+                {uploadedFiles.map((file, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center p-2.5 bg-green-50 border border-green-200 rounded-xl"
+                  >
+                    <File className="h-4 w-4 text-green-500 mr-2" />
+                    <div>
+                      <p className="text-xs font-medium text-gray-700">
+                        {file.filename}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {(file.size / 1024 / 1024).toFixed(2)} MB • Uploaded
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,0 +1,461 @@
+{
+  "schemas": [
+    {
+      "name": "flights",
+      "estimatedRows": 15000,
+      "columns": [
+        {
+          "name": "flight_id",
+          "type": "STRING",
+          "nullable": false,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "airline",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "aircraft_type",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "departure_airport_code",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "departure_airport_name",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "departure_city",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "departure_country",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "departure_terminal",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "departure_gate",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "departure_datetime",
+          "type": "DATE",
+          "nullable": false
+        },
+        {
+          "name": "arrival_airport_code",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "arrival_airport_name",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "arrival_city",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "arrival_country",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "arrival_terminal",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "arrival_gate",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "arrival_datetime",
+          "type": "DATE",
+          "nullable": false
+        },
+        {
+          "name": "duration_minutes",
+          "type": "INTEGER",
+          "nullable": false
+        },
+        {
+          "name": "distance_miles",
+          "type": "FLOAT",
+          "nullable": false
+        },
+        {
+          "name": "base_fare",
+          "type": "FLOAT",
+          "nullable": false
+        },
+        {
+          "name": "taxes",
+          "type": "FLOAT",
+          "nullable": false
+        },
+        {
+          "name": "fees",
+          "type": "FLOAT",
+          "nullable": false
+        },
+        {
+          "name": "total_price",
+          "type": "FLOAT",
+          "nullable": false
+        },
+        {
+          "name": "currency",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "passenger_name",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "passenger_email",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "passenger_phone",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "passport_number",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "seat_number",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "class",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "booking_reference",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "booking_date",
+          "type": "DATE",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "check_in_available",
+          "type": "BOOLEAN",
+          "nullable": false
+        },
+        {
+          "name": "baggage_allowance",
+          "type": "STRING",
+          "nullable": true
+        }
+      ],
+      "relationships": [
+        {
+          "fromTable": "flights",
+          "fromColumn": "departure_airport_code",
+          "toTable": "airports",
+          "toColumn": "airport_code",
+          "type": "many-to-one"
+        },
+        {
+          "fromTable": "flights",
+          "fromColumn": "arrival_airport_code",
+          "toTable": "airports",
+          "toColumn": "airport_code",
+          "type": "many-to-one"
+        }
+      ]
+    },
+    {
+      "name": "airports",
+      "estimatedRows": 500,
+      "columns": [
+        {
+          "name": "airport_code",
+          "type": "STRING",
+          "nullable": false,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "airport_name",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "city",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "country",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "timezone",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "latitude",
+          "type": "FLOAT",
+          "nullable": true
+        },
+        {
+          "name": "longitude",
+          "type": "FLOAT",
+          "nullable": true
+        },
+        {
+          "name": "elevation_ft",
+          "type": "INTEGER",
+          "nullable": true
+        }
+      ],
+      "relationships": []
+    },
+    {
+      "name": "airlines",
+      "estimatedRows": 200,
+      "columns": [
+        {
+          "name": "airline_code",
+          "type": "STRING",
+          "nullable": false,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "airline_name",
+          "type": "STRING",
+          "nullable": false
+        },
+        {
+          "name": "country",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "alliance",
+          "type": "STRING",
+          "nullable": true
+        },
+        {
+          "name": "founded_year",
+          "type": "INTEGER",
+          "nullable": true
+        },
+        {
+          "name": "fleet_size",
+          "type": "INTEGER",
+          "nullable": true
+        }
+      ],
+      "relationships": []
+    }
+  ],
+  "sampleData": {
+    "flights": [
+      {
+        "flight_id": "AA1234",
+        "airline": "American Airlines",
+        "aircraft_type": "Boeing 737-800",
+        "departure_airport_code": "LAX",
+        "departure_airport_name": "Los Angeles International Airport",
+        "departure_city": "Los Angeles",
+        "departure_country": "United States",
+        "departure_terminal": "Terminal 4",
+        "departure_gate": "A12",
+        "departure_datetime": "2024-01-15T08:30:00Z",
+        "arrival_airport_code": "JFK",
+        "arrival_airport_name": "John F. Kennedy International Airport",
+        "arrival_city": "New York",
+        "arrival_country": "United States",
+        "arrival_terminal": "Terminal 8",
+        "arrival_gate": "B15",
+        "arrival_datetime": "2024-01-15T16:45:00Z",
+        "duration_minutes": 495,
+        "distance_miles": 2475.0,
+        "base_fare": 299.00,
+        "taxes": 45.50,
+        "fees": 25.00,
+        "total_price": 369.50,
+        "currency": "USD",
+        "passenger_name": "John Smith",
+        "passenger_email": "john.smith@email.com",
+        "passenger_phone": "+1-555-0123",
+        "passport_number": "A12345678",
+        "seat_number": "12A",
+        "class": "Economy",
+        "booking_reference": "AA123456789",
+        "booking_date": "2024-01-10T14:22:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      },
+      {
+        "flight_id": "DL5678",
+        "airline": "Delta Air Lines",
+        "aircraft_type": "Airbus A320",
+        "departure_airport_code": "ATL",
+        "departure_airport_name": "Hartsfield-Jackson Atlanta International Airport",
+        "departure_city": "Atlanta",
+        "departure_country": "United States",
+        "departure_terminal": "Terminal S",
+        "departure_gate": "C8",
+        "departure_datetime": "2024-01-16T14:20:00Z",
+        "arrival_airport_code": "MIA",
+        "arrival_airport_name": "Miami International Airport",
+        "arrival_city": "Miami",
+        "arrival_country": "United States",
+        "arrival_terminal": "Terminal D",
+        "arrival_gate": "E22",
+        "arrival_datetime": "2024-01-16T16:35:00Z",
+        "duration_minutes": 135,
+        "distance_miles": 662.0,
+        "base_fare": 189.00,
+        "taxes": 32.50,
+        "fees": 15.00,
+        "total_price": 236.50,
+        "currency": "USD",
+        "passenger_name": "Sarah Johnson",
+        "passenger_email": "sarah.j@email.com",
+        "passenger_phone": "+1-555-0456",
+        "passport_number": "B98765432",
+        "seat_number": "8F",
+        "class": "Economy",
+        "booking_reference": "DL987654321",
+        "booking_date": "2024-01-12T09:15:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      },
+      {
+        "flight_id": "UA9012",
+        "airline": "United Airlines",
+        "aircraft_type": "Boeing 777-300ER",
+        "departure_airport_code": "SFO",
+        "departure_airport_name": "San Francisco International Airport",
+        "departure_city": "San Francisco",
+        "departure_country": "United States",
+        "departure_terminal": "Terminal 3",
+        "departure_gate": "F5",
+        "departure_datetime": "2024-01-17T22:15:00Z",
+        "arrival_airport_code": "LHR",
+        "arrival_airport_name": "London Heathrow Airport",
+        "arrival_city": "London",
+        "arrival_country": "United Kingdom",
+        "arrival_terminal": "Terminal 2",
+        "arrival_gate": "A18",
+        "arrival_datetime": "2024-01-18T14:30:00Z",
+        "duration_minutes": 675,
+        "distance_miles": 5356.0,
+        "base_fare": 899.00,
+        "taxes": 125.50,
+        "fees": 45.00,
+        "total_price": 1069.50,
+        "currency": "USD",
+        "passenger_name": "Michael Brown",
+        "passenger_email": "m.brown@email.com",
+        "passenger_phone": "+1-555-0789",
+        "passport_number": "C45678901",
+        "seat_number": "15B",
+        "class": "Premium Economy",
+        "booking_reference": "UA456789012",
+        "booking_date": "2024-01-08T16:30:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "2 carry-on, 2 checked bags"
+      }
+    ],
+    "airports": [
+      {
+        "airport_code": "LAX",
+        "airport_name": "Los Angeles International Airport",
+        "city": "Los Angeles",
+        "country": "United States",
+        "timezone": "America/Los_Angeles",
+        "latitude": 33.9425,
+        "longitude": -118.4081,
+        "elevation_ft": 125
+      },
+      {
+        "airport_code": "JFK",
+        "airport_name": "John F. Kennedy International Airport",
+        "city": "New York",
+        "country": "United States",
+        "timezone": "America/New_York",
+        "latitude": 40.6413,
+        "longitude": -73.7781,
+        "elevation_ft": 13
+      },
+      {
+        "airport_code": "LHR",
+        "airport_name": "London Heathrow Airport",
+        "city": "London",
+        "country": "United Kingdom",
+        "timezone": "Europe/London",
+        "latitude": 51.4700,
+        "longitude": -0.4543,
+        "elevation_ft": 83
+      }
+    ],
+    "airlines": [
+      {
+        "airline_code": "AA",
+        "airline_name": "American Airlines",
+        "country": "United States",
+        "alliance": "Oneworld",
+        "founded_year": 1926,
+        "fleet_size": 956
+      },
+      {
+        "airline_code": "DL",
+        "airline_name": "Delta Air Lines",
+        "country": "United States",
+        "alliance": "SkyTeam",
+        "founded_year": 1924,
+        "fleet_size": 912
+      },
+      {
+        "airline_code": "UA",
+        "airline_name": "United Airlines",
+        "country": "United States",
+        "alliance": "Star Alliance",
+        "founded_year": 1926,
+        "fleet_size": 863
+      }
+    ]
+  }
+}

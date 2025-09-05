@@ -1,0 +1,245 @@
+{
+  "flights": [
+    {
+      "flight_id": "IB1234",
+      "airline": "Iberia",
+      "aircraft_type": "Airbus A330-200",
+      "departure": {
+        "airport_code": "MAD",
+        "airport_name": "Adolfo Suárez Madrid-Barajas Airport",
+        "city": "Madrid",
+        "country": "Spain",
+        "terminal": "Terminal 4S",
+        "gate": "C22",
+        "datetime": "2024-01-27T20:45:00Z"
+      },
+      "arrival": {
+        "airport_code": "GRU",
+        "airport_name": "São Paulo/Guarulhos International Airport",
+        "city": "São Paulo",
+        "country": "Brazil",
+        "terminal": "Terminal 3",
+        "gate": "A15",
+        "datetime": "2024-01-28T05:20:00Z"
+      },
+      "duration_minutes": 635,
+      "distance_miles": 5025,
+      "price": {
+        "base_fare": 750.00,
+        "taxes": 95.25,
+        "fees": 42.00,
+        "total": 887.25,
+        "currency": "EUR"
+      },
+      "passenger": {
+        "name": "Ana Silva",
+        "email": "ana.silva@email.com",
+        "phone": "+55-11-9876-5432",
+        "passport": "BR456789012",
+        "seat": "25F",
+        "class": "Economy"
+      },
+      "booking": {
+        "booking_reference": "IB890123456",
+        "booking_date": "2024-01-18T16:45:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      }
+    },
+    {
+      "flight_id": "AC5678",
+      "airline": "Air Canada",
+      "aircraft_type": "Boeing 787-9 Dreamliner",
+      "departure": {
+        "airport_code": "YYZ",
+        "airport_name": "Toronto Pearson International Airport",
+        "city": "Toronto",
+        "country": "Canada",
+        "terminal": "Terminal 1",
+        "gate": "E12",
+        "datetime": "2024-01-28T13:30:00Z"
+      },
+      "arrival": {
+        "airport_code": "YVR",
+        "airport_name": "Vancouver International Airport",
+        "city": "Vancouver",
+        "country": "Canada",
+        "terminal": "Terminal M",
+        "gate": "A8",
+        "datetime": "2024-01-28T15:45:00Z"
+      },
+      "duration_minutes": 255,
+      "distance_miles": 2084,
+      "price": {
+        "base_fare": 425.00,
+        "taxes": 58.75,
+        "fees": 25.00,
+        "total": 508.75,
+        "currency": "CAD"
+      },
+      "passenger": {
+        "name": "Robert Taylor",
+        "email": "robert.taylor@email.com",
+        "phone": "+1-416-555-0123",
+        "passport": "CA123456789",
+        "seat": "7D",
+        "class": "Economy"
+      },
+      "booking": {
+        "booking_reference": "AC123456789",
+        "booking_date": "2024-01-19T09:20:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      }
+    },
+    {
+      "flight_id": "EK9012",
+      "airline": "Emirates",
+      "aircraft_type": "Airbus A380",
+      "departure": {
+        "airport_code": "DXB",
+        "airport_name": "Dubai International Airport",
+        "city": "Dubai",
+        "country": "United Arab Emirates",
+        "terminal": "Terminal 3",
+        "gate": "A25",
+        "datetime": "2024-01-29T02:15:00Z"
+      },
+      "arrival": {
+        "airport_code": "LHR",
+        "airport_name": "London Heathrow Airport",
+        "city": "London",
+        "country": "United Kingdom",
+        "terminal": "Terminal 3",
+        "gate": "B8",
+        "datetime": "2024-01-29T06:30:00Z"
+      },
+      "duration_minutes": 255,
+      "distance_miles": 3420,
+      "price": {
+        "base_fare": 650.00,
+        "taxes": 85.50,
+        "fees": 35.00,
+        "total": 770.50,
+        "currency": "AED"
+      },
+      "passenger": {
+        "name": "Ahmed Al-Rashid",
+        "email": "ahmed.alrashid@email.com",
+        "phone": "+971-50-123-4567",
+        "passport": "AE987654321",
+        "seat": "12A",
+        "class": "Business"
+      },
+      "booking": {
+        "booking_reference": "EK234567890",
+        "booking_date": "2024-01-20T11:15:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "2 carry-on, 2 checked bags"
+      }
+    },
+    {
+      "flight_id": "QR3456",
+      "airline": "Qatar Airways",
+      "aircraft_type": "Boeing 777-300ER",
+      "departure": {
+        "airport_code": "DOH",
+        "airport_name": "Hamad International Airport",
+        "city": "Doha",
+        "country": "Qatar",
+        "terminal": "Terminal 1",
+        "gate": "C15",
+        "datetime": "2024-01-30T08:45:00Z"
+      },
+      "arrival": {
+        "airport_code": "BKK",
+        "airport_name": "Suvarnabhumi Airport",
+        "city": "Bangkok",
+        "country": "Thailand",
+        "terminal": "Terminal 1",
+        "gate": "D12",
+        "datetime": "2024-01-30T18:20:00Z"
+      },
+      "duration_minutes": 575,
+      "distance_miles": 3080,
+      "price": {
+        "base_fare": 520.00,
+        "taxes": 68.25,
+        "fees": 28.50,
+        "total": 616.75,
+        "currency": "QAR"
+      },
+      "passenger": {
+        "name": "Priya Patel",
+        "email": "priya.patel@email.com",
+        "phone": "+66-2-123-4567",
+        "passport": "IN123456789",
+        "seat": "18F",
+        "class": "Economy"
+      },
+      "booking": {
+        "booking_reference": "QR345678901",
+        "booking_date": "2024-01-21T14:30:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      }
+    },
+    {
+      "flight_id": "TG7890",
+      "airline": "Thai Airways",
+      "aircraft_type": "Airbus A350-900",
+      "departure": {
+        "airport_code": "BKK",
+        "airport_name": "Suvarnabhumi Airport",
+        "city": "Bangkok",
+        "country": "Thailand",
+        "terminal": "Terminal 1",
+        "gate": "A22",
+        "datetime": "2024-01-31T10:30:00Z"
+      },
+      "arrival": {
+        "airport_code": "SIN",
+        "airport_name": "Singapore Changi Airport",
+        "city": "Singapore",
+        "country": "Singapore",
+        "terminal": "Terminal 1",
+        "gate": "B18",
+        "datetime": "2024-01-31T13:45:00Z"
+      },
+      "duration_minutes": 195,
+      "distance_miles": 890,
+      "price": {
+        "base_fare": 185.00,
+        "taxes": 25.50,
+        "fees": 12.00,
+        "total": 222.50,
+        "currency": "THB"
+      },
+      "passenger": {
+        "name": "Chen Wei",
+        "email": "chen.wei@email.com",
+        "phone": "+65-6123-4567",
+        "passport": "CN987654321",
+        "seat": "9C",
+        "class": "Economy"
+      },
+      "booking": {
+        "booking_reference": "TG456789012",
+        "booking_date": "2024-01-22T16:45:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      }
+    }
+  ],
+  "metadata": {
+    "total_flights": 5,
+    "generated_date": "2024-01-20T00:00:00Z",
+    "data_version": "1.0",
+    "description": "International flight booking data for ETL testing"
+  }
+}
