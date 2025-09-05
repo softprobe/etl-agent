@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, File, X, AlertCircle } from 'lucide-react';
+import { Upload, File, X, AlertCircle, Plus } from 'lucide-react';
 import type { UploadedFile } from '../types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -40,7 +41,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       const files = Array.from(e.dataTransfer.files).filter(
         file => file.type === 'application/json' || file.name.endsWith('.json')
       );
-      setSelectedFiles(files);
+      setSelectedFiles(prev => [...prev, ...files]);
     }
   }, []);
 
@@ -48,8 +49,10 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     e.preventDefault();
     if (e.target.files && e.target.files[0]) {
       const files = Array.from(e.target.files);
-      setSelectedFiles(files);
+      setSelectedFiles(prev => [...prev, ...files]);
     }
+    // Reset the input value so the same file can be selected again
+    e.target.value = '';
   }, []);
 
   const handleUpload = () => {
@@ -74,35 +77,37 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         </CardHeader>
         <CardContent className="space-y-6">
 
-          {/* Drag and Drop Area */}
-          <div
-            className={`relative border border-dashed rounded-xl p-8 text-center transition-colors ${
-              dragActive
-                ? 'border-blue-300 bg-blue-50/50'
-                : 'border-gray-200 hover:border-gray-300'
-            }`}
-            onDragEnter={handleDrag}
-            onDragLeave={handleDrag}
-            onDragOver={handleDrag}
-            onDrop={handleDrop}
-          >
-            <input
-              type="file"
-              multiple
-              accept=".json"
-              onChange={handleChange}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              disabled={loading}
-            />
-            
-            <Upload className="mx-auto h-10 w-10 text-gray-300 mb-3" />
-            <h3 className="text-sm font-medium text-gray-700 mb-1">
-              Drop JSON files here, or click to browse
-            </h3>
-            <p className="text-xs text-gray-400">
-              Supports .json files up to 100MB each
-            </p>
-          </div>
+          {/* Drag and Drop Area - Only show when no files selected */}
+          {selectedFiles.length === 0 && (
+            <div
+              className={`relative border border-dashed rounded-xl p-8 text-center transition-colors ${
+                dragActive
+                  ? 'border-blue-300 bg-blue-50/50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+            >
+              <input
+                type="file"
+                multiple
+                accept=".json"
+                onChange={handleChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                disabled={loading}
+              />
+              
+              <Upload className="mx-auto h-10 w-10 text-gray-300 mb-3" />
+              <h3 className="text-sm font-medium text-gray-700 mb-1">
+                Drop JSON files here, or click to browse
+              </h3>
+              <p className="text-xs text-gray-400">
+                Supports .json files up to 100MB each
+              </p>
+            </div>
+          )}
 
           {/* Error Display */}
           {error && (
@@ -148,6 +153,29 @@ export const FileUpload: React.FC<FileUploadProps> = ({
                     </Button>
                   </div>
                 ))}
+              </div>
+              
+              {/* Add More Files Button - Show below file list */}
+              <div className="flex justify-center mt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={loading}
+                  className="flex items-center gap-2 text-xs"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add More Files
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept=".json"
+                  onChange={handleChange}
+                  className="hidden"
+                  disabled={loading}
+                />
               </div>
               
               <Button

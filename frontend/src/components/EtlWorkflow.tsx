@@ -15,9 +15,9 @@ import { Button } from '@/components/ui/button';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 
 const WORKFLOW_STEPS = [
-  { id: 'upload', label: 'Upload JSON Files', description: 'Upload your data files' },
+  { id: 'upload', label: 'Upload Files', description: 'Upload your data files' },
   { id: 'schema', label: 'Review Schema', description: 'Approve the proposed table structure' },
-  { id: 'chat', label: 'Refine with Claude', description: 'Chat to customize your ETL' },
+  { id: 'chat', label: 'Claude Refine', description: 'Chat to customize your ETL' },
   { id: 'deploy', label: 'Deploy ETL', description: 'Deploy to Google Cloud Run' }
 ];
 
