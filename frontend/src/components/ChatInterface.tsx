@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertCircle, Loader2, RotateCcw, Info } from 'lucide-react';
+import { Send, Bot, User, AlertCircle, Loader2, RotateCcw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ChatMessage } from '../types';
@@ -7,7 +7,6 @@ import { extractContent } from '../utils/contentExtraction';
 import { apiService } from '../services/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -29,9 +28,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onSchemaGenerated
 }) => {
   const [input, setInput] = useState('');
+  const [isMultiLine, setIsMultiLine] = useState(false);
   const [sessionStatus, setSessionStatus] = useState<{isActive: boolean, message: string} | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -135,71 +135,68 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   const getIconContainerStyle = (type: ChatMessage['type']) => {
-    switch (type) {
-      case 'user':
-        return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg border border-blue-400';
-      case 'assistant':
-        return 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md border border-indigo-400';
-      case 'error':
-        return 'bg-gradient-to-br from-red-500 to-red-600 text-white shadow-md border border-red-400';
-      case 'system':
-        return 'bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-sm border border-amber-400';
-      default:
-        return 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md border border-indigo-400';
+    if (type === 'user') {
+      return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg border border-blue-400';
     }
+    return 'bg-white text-gray-600 shadow-md border border-gray-200';
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto">
       <Card>
         <CardHeader className="pb-6">
-          <CardTitle className="text-md flex items-center">
-            <Bot className="h-4 w-4 mr-2 text-blue-500" />
-            Chat with Claude
-          </CardTitle>
-          <CardDescription className="text-xs">
-            Ask questions about your ETL pipeline or request modifications
-          </CardDescription>
-        
-          {/* Connection Status */}
-          <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center">
-              <Badge 
-                variant={isConnected ? "default" : "destructive"}
-                className="text-xs mr-3"
-              >
-                {isConnected ? 'Connected to Claude' : 'Disconnected'}
-              </Badge>
-              {sessionStatus && (
-                <Badge 
-                  variant={sessionStatus.isActive ? "default" : "secondary"}
-                  className="text-xs"
-                >
-                  {sessionStatus.isActive ? 'Active Session' : 'No Session'}
-                </Badge>
-              )}
+          <div className="flex items-start justify-between">
+            <div>
+              <CardTitle className="text-md flex items-center">
+                <Bot className="h-4 w-4 mr-2 text-blue-500" />
+                Chat with Claude
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Ask questions about your ETL pipeline or request modifications
+              </CardDescription>
             </div>
             
-            {/* Session Management Controls */}
-            <div className="flex items-center space-x-1.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleCheckStatus}
-                className="h-8 w-8 p-0"
-                title="Check session status"
-              >
-                <Info className="h-3.5 w-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleNewSession}
-                className="h-8 w-8 p-0"
-                title="Start new conversation"
-              >
-                <RotateCcw className="h-3.5 w-3.5" />
-              </Button>
+            {/* Status and Controls - Top Right */}
+            <div className="flex items-center space-x-2">
+              {/* Status Badges */}
+              <div className="flex items-center space-x-1">
+                <Badge 
+                  variant={isConnected ? "default" : "destructive"}
+                  className={`text-[10px] px-1.5 py-0.5 ${isConnected ? 'bg-green-500 hover:bg-green-600 text-white' : ''}`}
+                >
+                  {isConnected ? 'Connected' : 'Disconnected'}
+                </Badge>
+                {/* {sessionStatus && (
+                  <Badge 
+                    variant={sessionStatus.isActive ? "default" : "secondary"}
+                    className="text-[10px] px-1.5 py-0.5"
+                  >
+                    {sessionStatus.isActive ? 'Active' : 'No Session'}
+                  </Badge>
+                )} */}
+              </div>
+              
+              {/* Session Management Controls */}
+              <div className="flex items-center space-x-1">
+                {/* <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleCheckStatus}
+                  className="h-6 w-6 p-0"
+                  title="Check session status"
+                >
+                  <Info className="h-3 w-3" />
+                </Button> */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleNewSession}
+                  className="h-6 w-6 p-0"
+                  title="Start new conversation"
+                >
+                  <RotateCcw className="h-3 w-3" />
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -210,9 +207,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <div className="space-y-4">
           {messages.length === 0 ? (
             <div className="text-center py-12">
-              <div className="p-3 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg border border-indigo-400 w-12 h-12 mx-auto mb-4 flex items-center justify-center">
-                <Bot className="h-6 w-6" />
-              </div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2">
                 Start a conversation
               </h3>
@@ -371,34 +365,57 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </CardContent>
 
         {/* Input Form */}
-        <CardContent className="border-t p-4">
-          <form onSubmit={handleSubmit} className="flex space-x-3">
-            <Input
-              ref={inputRef}
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder={
-                isConnected 
-                  ? "Ask Claude about your ETL pipeline..." 
-                  : "Connecting to Claude..."
-              }
-              disabled={!isConnected || isLoading}
-              className="text-xs"
-            />
-            <Button
-              type="submit"
-              disabled={!input.trim() || !isConnected || isLoading}
-              size="sm"
-              className="text-xs font-medium"
-            >
-              {isLoading ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Send className="h-3.5 w-3.5" />
-              )}
-            </Button>
-          </form>
+        <CardContent className="">
+          <div className="bg-gray-100 rounded-2xl p-4">
+            <form onSubmit={handleSubmit} className="relative">
+              <div className={isMultiLine ? "flex flex-col space-y-2" : "flex items-end space-x-2"}>
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={
+                      isConnected 
+                        ? "Ask Claude about your ETL pipeline..." 
+                        : "Connecting to Claude..."
+                    }
+                    disabled={!isConnected || isLoading}
+                    className="w-full resize-none border-0 bg-transparent text-xs placeholder-gray-500 focus:outline-none focus:ring-0 p-0 min-h-[20px] max-h-[120px] overflow-y-auto"
+                    rows={1}
+                    style={{
+                      height: 'auto',
+                      minHeight: '20px',
+                      maxHeight: '120px'
+                    }}
+                    onInput={(e) => {
+                      const target = e.target as HTMLTextAreaElement;
+                      target.style.height = 'auto';
+                      const newHeight = Math.min(target.scrollHeight, 120);
+                      target.style.height = newHeight + 'px';
+                      
+                      // Check if content spans multiple lines by counting line breaks
+                      const lineCount = (target.value.match(/\n/g) || []).length + 1;
+                      setIsMultiLine(lineCount > 1 || newHeight > 30);
+                    }}
+                  />
+                </div>
+                <div className={isMultiLine ? "flex justify-end" : ""}>
+                  <Button
+                    type="submit"
+                    disabled={!input.trim() || !isConnected || isLoading}
+                    size="sm"
+                    className="h-8 w-8 p-0 rounded-full bg-blue-600 hover:bg-blue-700 text-white shrink-0"
+                  >
+                    {isLoading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
         </CardContent>
       </Card>
     </div>
