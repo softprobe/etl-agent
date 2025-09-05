@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { CheckCircle, Circle, Clock, AlertCircle, Code, GripVertical } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, Circle, Clock, AlertCircle, Code } from 'lucide-react';
 import { FileUpload } from './FileUpload';
 import { SimpleSchemaPreview } from './SimpleSchemaPreview';
 import { ChatInterface } from './ChatInterface';
@@ -8,6 +8,11 @@ import { useFileUpload } from '../hooks/useFileUpload';
 import { useWebSocketChat } from '../hooks/useWebSocketChat';
 import type { WorkflowState, TableSchema } from '../types';
 import { apiService } from '../services/api';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
 
 const WORKFLOW_STEPS = [
   { id: 'upload', label: 'Upload JSON Files', description: 'Upload your data files' },
@@ -27,55 +32,9 @@ export const EtlWorkflow: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showCodeEditor, setShowCodeEditor] = useState(true);
-  const [leftColumnWidth, setLeftColumnWidth] = useState(60); // percentage
-  const [isResizing, setIsResizing] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const fileUpload = useFileUpload();
   const chat = useWebSocketChat();
-
-  // Resize handlers
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-  }, []);
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizing || !containerRef.current) return;
-    
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const newLeftWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-    
-    // Constrain between 30% and 80%
-    const constrainedWidth = Math.min(Math.max(newLeftWidth, 30), 80);
-    setLeftColumnWidth(constrainedWidth);
-  }, [isResizing]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsResizing(false);
-  }, []);
-
-  // Add event listeners for mouse move and up
-  useEffect(() => {
-    if (isResizing) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = 'col-resize';
-      document.body.style.userSelect = 'none';
-    } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.body.style.cursor = '';
-      document.body.style.userSelect = '';
-    };
-  }, [isResizing, handleMouseMove, handleMouseUp]);
 
   // Update workflow files when upload succeeds
   useEffect(() => {
@@ -88,7 +47,7 @@ export const EtlWorkflow: React.FC = () => {
   const handleFilesUpload = async (files: File[]) => {
     try {
       const response = await fileUpload.uploadFiles(files);
-      
+
       // Auto-advance to schema step if files uploaded successfully
       if (response.status === 'success' && response.files.length > 0) {
         // Generate initial schema analysis via chat
@@ -131,7 +90,7 @@ export const EtlWorkflow: React.FC = () => {
 
       setDdl(ddlResponse.ddl);
       setEtlCode(etlResponse.etl_code);
-      
+
       setWorkflowState(prev => ({
         ...prev,
         step: 'chat',
@@ -172,7 +131,7 @@ export const EtlWorkflow: React.FC = () => {
   const getStepStatus = (stepId: string) => {
     const currentIndex = WORKFLOW_STEPS.findIndex(s => s.id === workflowState.step);
     const stepIndex = WORKFLOW_STEPS.findIndex(s => s.id === stepId);
-    
+
     if (stepIndex < currentIndex) return 'completed';
     if (stepIndex === currentIndex) return loading ? 'loading' : 'current';
     return 'pending';
@@ -180,7 +139,7 @@ export const EtlWorkflow: React.FC = () => {
 
   const getStepIcon = (stepId: string) => {
     const status = getStepStatus(stepId);
-    
+
     switch (status) {
       case 'completed':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
@@ -194,173 +153,160 @@ export const EtlWorkflow: React.FC = () => {
   };
 
   return (
-    <div ref={containerRef} className="h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex overflow-hidden">
-      {/* Left Side - Code Editor (adjustable width) */}
-      <div 
-        className="flex flex-col"
-        style={{ width: `${leftColumnWidth}%` }}
-      >
-        {/* Code Editor Header */}
-        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              Code Editor
-            </h1>
-            <p className="text-sm text-gray-600">
-              DDL and ETL Code
-            </p>
-          </div>
-          <button
-            onClick={() => setShowCodeEditor(!showCodeEditor)}
-            className={`relative flex items-center px-4 py-2 rounded-lg border transition-all duration-200 ${
-              showCodeEditor
-                ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:shadow-md'
-            }`}
-          >
-            <Code className="h-4 w-4 mr-2" />
-            {showCodeEditor ? 'Hide Code' : 'View Code'}
-            {(ddl || etlCode) && !showCodeEditor && (
-              <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 border-2 border-white rounded-full"></div>
-            )}
-          </button>
-        </div>
+    <div className="h-screen overflow-hidden" style={{ backgroundColor: '#FCFBF8' }}>
+      <ResizablePanelGroup direction="horizontal" className="h-full">
+        {/* Left Side - Code Editor */}
+        <ResizablePanel defaultSize={60} minSize={30} maxSize={80}>
+          <Card className="h-full border-0 !bg-[#FCFBF8]">
+            <CardHeader
+              className="flex-row items-center justify-between space-y-0"
+              style={{ height: '48px', padding: '8px' }}
+            >
+              <CardTitle
+                className="!text-xl !font-bold"
+                style={{ fontSize: '1.25rem', fontWeight: '700' }}
+              >
+                Code Editor
+              </CardTitle>
+              <Button
+                onClick={() => setShowCodeEditor(!showCodeEditor)}
+                variant={showCodeEditor ? "default" : "outline"}
+                size="sm"
+                className="relative"
+                style={{
+                  padding: '2px 8px',
+                  backgroundColor: showCodeEditor ? '#1f2937' : 'transparent',
+                  color: showCodeEditor ? 'white' : 'inherit',
+                  borderColor: showCodeEditor ? '#1f2937' : '#d1d5db'
+                }}
+              >
+                <Code
+                  className="mr-1.5"
+                  style={{ width: '16px', height: '16px' }}
+                />
+                {showCodeEditor ? 'Hide Code' : 'View Code'}
+                {(ddl || etlCode) && !showCodeEditor && (
+                  <Badge className="absolute -top-1 -right-1 h-2.5 w-2.5 p-0 bg-green-500 border-2 border-white rounded-full" />
+                )}
+              </Button>
+            </CardHeader>
 
-        {/* Code Editor Content */}
-        <div className="flex-1 min-h-0">
-          {showCodeEditor ? (
-            <div className="h-full">
-              <CodeEditor
-                ddl={ddl}
-                etlCode={etlCode}
-                readonly={false}
-                collapsed={false}
-              />
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full bg-gray-50">
-              <div className="text-center">
-                <Code className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500">Click "View Code" to see the generated DDL and ETL code</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Resize Handle */}
-      <div
-        className={`w-1 bg-gray-300 hover:bg-blue-400 cursor-col-resize flex items-center justify-center transition-colors ${
-          isResizing ? 'bg-blue-500' : ''
-        }`}
-        onMouseDown={handleMouseDown}
-      >
-        <GripVertical className="h-4 w-4 text-gray-500" />
-      </div>
-
-      {/* Right Side - Adjustable Width Column */}
-      <div 
-        className="bg-white border-l border-gray-200 flex flex-col"
-        style={{ width: `${100 - leftColumnWidth}%` }}
-      >
-        {/* Header */}
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Agentic ETL Engineer
-          </h1>
-          <p className="text-sm text-gray-600">
-            Transform your JSON data into BigQuery tables with AI assistance
-          </p>
-        </div>
-
-        {/* Progress Steps */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="space-y-4">
-            {WORKFLOW_STEPS.map((step) => (
-              <div key={step.id} className="flex items-start space-x-3">
-                <div className={`p-2 rounded-full border-2 ${
-                  getStepStatus(step.id) === 'completed' 
-                    ? 'border-green-600 bg-green-50'
-                    : getStepStatus(step.id) === 'current'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-300 bg-white'
-                }`}>
-                  {getStepIcon(step.id)}
+            {/* Code Editor Content */}
+            <div className="flex-1 h-full">
+              {showCodeEditor ? (
+                <div className="h-full">
+                  <CodeEditor
+                    ddl={ddl}
+                    etlCode={etlCode}
+                    readonly={false}
+                    collapsed={false}
+                  />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${
-                    getStepStatus(step.id) === 'current' 
-                      ? 'text-blue-600' 
-                      : 'text-gray-900'
-                  }`}>
-                    {step.label}
-                  </p>
-                  <p className="text-xs text-gray-500">{step.description}</p>
+              ) : (
+                <div className="flex items-center justify-center h-full bg-gray-50/50 rounded-b-xl">
+                  <div className="text-center">
+                    <Code className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-gray-400">Click "View Code" to see the generated DDL and ETL code</p>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </div>
+              )}
+            </div>
+          </Card>
+        </ResizablePanel>
 
-        {/* Error Display */}
-        {error && (
-          <div className="p-6 border-b border-gray-200">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <div className="flex items-start">
-                <AlertCircle className="h-4 w-4 text-red-400 mr-2 mt-0.5 flex-shrink-0" />
-                <p className="text-xs text-red-700">{error}</p>
+        {/* Resize Handle */}
+        <ResizableHandle withHandle={false} />
+
+        {/* Right Side - Main Content */}
+        <ResizablePanel defaultSize={40} minSize={20} maxSize={70}>
+          <Card className="h-full rounded-r-xl flex flex-col !bg-[#FCFBF8]">
+            {/* Header */}
+
+            <div
+              className="px-2 py-4"
+            >
+              <h1 className="text-xl font-bold">Agentic ETL Engineer</h1>
+              <div className="text-xs">
+                Transform your JSON data into BigQuery tables with AI assistance
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Step Content */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6">
-            {/* Step 1: File Upload */}
-            {workflowState.step === 'upload' && (
-              <FileUpload
-                onFilesUpload={handleFilesUpload}
-                uploadedFiles={fileUpload.uploadedFiles}
-                loading={fileUpload.loading}
-                error={fileUpload.error}
-              />
+            {/* Progress Steps */}
+            <CardContent className="pb-6 px-6">
+              <div className="space-y-4">
+                {WORKFLOW_STEPS.map((step) => (
+                  <div key={step.id} className="flex items-start space-x-4">
+                    <div className={`p-2 rounded-xl border ${getStepStatus(step.id) === 'completed'
+                      ? 'border-green-400 bg-green-50'
+                      : getStepStatus(step.id) === 'current'
+                        ? 'border-blue-400 bg-blue-50'
+                        : 'border-gray-200 bg-gray-50'
+                      }`}>
+                      {getStepIcon(step.id)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-sm font-medium ${getStepStatus(step.id) === 'current'
+                        ? 'text-blue-600'
+                        : 'text-gray-700'
+                        }`}>
+                        {step.label}
+                      </p>
+                      <p className="text-xs text-gray-400 mt-1">{step.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+
+            {/* Error Display */}
+            {error && (
+              <CardContent className="pb-6 px-6">
+                <Alert variant="destructive">
+                  <AlertCircle className="h-3.5 w-3.5" />
+                  <AlertDescription className="text-xs">
+                    {error}
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
             )}
 
-            {/* Step 2: Schema Preview */}
-            {workflowState.step === 'schema' && (
-              <SimpleSchemaPreview
-                schemas={schemas}
-                onApprove={handleSchemaApprove}
-                onModify={handleSchemaModify}
-                loading={loading}
-              />
-            )}
+            {/* Step Content */}
+            <CardContent className="flex-1 overflow-y-auto px-6">
+              <div className="space-y-6">
+                {/* Step 1: File Upload */}
+                {workflowState.step === 'upload' && (
+                  <FileUpload
+                    onFilesUpload={handleFilesUpload}
+                    uploadedFiles={fileUpload.uploadedFiles}
+                    loading={fileUpload.loading}
+                    error={fileUpload.error}
+                  />
+                )}
 
-            {/* Chat Interface */}
-            <ChatInterface
-              messages={chat.messages}
-              onSendMessage={chat.sendMessage}
-              isConnected={chat.isConnected}
-              isLoading={chat.isLoading}
-              onCodeGenerated={handleChatCodeGenerated}
-              onSchemaGenerated={handleChatSchemaGenerated}
-            />
-          </div>
-        </div>
+                {/* Step 2: Schema Preview */}
+                {workflowState.step === 'schema' && (
+                  <SimpleSchemaPreview
+                    schemas={schemas}
+                    onApprove={handleSchemaApprove}
+                    onModify={handleSchemaModify}
+                    loading={loading}
+                  />
+                )}
 
-        {/* Footer */}
-        <div className="p-6 border-t border-gray-200">
-          <div className="text-xs text-gray-500 space-y-1">
-            <p className="flex items-center space-x-2">
-              <span>🤖 Powered by Claude AI</span>
-            </p>
-            <p className="flex items-center space-x-2">
-              <span>☁️ Built for Google BigQuery and Cloud Run</span>
-            </p>
-          </div>
-        </div>
-      </div>
+                {/* Chat Interface */}
+                <ChatInterface
+                  messages={chat.messages}
+                  onSendMessage={chat.sendMessage}
+                  isConnected={chat.isConnected}
+                  isLoading={chat.isLoading}
+                  onCodeGenerated={handleChatCodeGenerated}
+                  onSchemaGenerated={handleChatSchemaGenerated}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 };

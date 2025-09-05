@@ -5,6 +5,11 @@ import remarkGfm from 'remark-gfm';
 import type { ChatMessage } from '../types';
 import { extractContent } from '../utils/contentExtraction';
 import { apiService } from '../services/api';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface ChatInterfaceProps {
   messages: ChatMessage[];
@@ -145,85 +150,81 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-          <Bot className="h-6 w-6 mr-2 text-blue-600" />
-          Chat with Claude
-        </h2>
-        <p className="text-gray-600">
-          Ask questions about your ETL pipeline or request modifications
-        </p>
+    <div className="w-full max-w-4xl mx-auto">
+      <Card>
+        <CardHeader className="pb-6">
+          <CardTitle className="text-md flex items-center">
+            <Bot className="h-4 w-4 mr-2 text-blue-500" />
+            Chat with Claude
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Ask questions about your ETL pipeline or request modifications
+          </CardDescription>
         
-        {/* Connection Status */}
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center">
-            <div 
-              className={`h-2 w-2 rounded-full mr-2 ${
-                isConnected ? 'bg-green-500' : 'bg-red-500'
-              }`}
-            />
-            <span className={`text-sm ${
-              isConnected ? 'text-green-700' : 'text-red-700'
-            }`}>
-              {isConnected ? 'Connected to Claude' : 'Disconnected'}
-            </span>
-            {sessionStatus && (
-              <div className="ml-4 flex items-center">
-                <div 
-                  className={`h-2 w-2 rounded-full mr-2 ${
-                    sessionStatus.isActive ? 'bg-blue-500' : 'bg-gray-400'
-                  }`}
-                />
-                <span className={`text-xs ${
-                  sessionStatus.isActive ? 'text-blue-700' : 'text-gray-600'
-                }`}>
+          {/* Connection Status */}
+          <div className="mt-4 flex items-center justify-between">
+            <div className="flex items-center">
+              <Badge 
+                variant={isConnected ? "default" : "destructive"}
+                className="text-xs mr-3"
+              >
+                {isConnected ? 'Connected to Claude' : 'Disconnected'}
+              </Badge>
+              {sessionStatus && (
+                <Badge 
+                  variant={sessionStatus.isActive ? "default" : "secondary"}
+                  className="text-xs"
+                >
                   {sessionStatus.isActive ? 'Active Session' : 'No Session'}
-                </span>
-              </div>
-            )}
+                </Badge>
+              )}
+            </div>
+            
+            {/* Session Management Controls */}
+            <div className="flex items-center space-x-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleCheckStatus}
+                className="h-8 w-8 p-0"
+                title="Check session status"
+              >
+                <Info className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleNewSession}
+                className="h-8 w-8 p-0"
+                title="Start new conversation"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
-          
-          {/* Session Management Controls */}
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleCheckStatus}
-              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              title="Check session status"
-            >
-              <Info className="h-4 w-4" />
-            </button>
-            <button
-              onClick={handleNewSession}
-              className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-              title="Start new conversation"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+        </CardHeader>
 
-      {/* Messages Container */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-        <div className="h-96 overflow-y-auto p-4 space-y-4">
+        {/* Messages Container */}
+        <CardContent className="p-0">
+          <ScrollArea className="h-96 p-6">
+            <div className="space-y-4">
           {messages.length === 0 ? (
             <div className="text-center py-12">
-              <div className="p-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg border border-indigo-400 w-16 h-16 mx-auto mb-6 flex items-center justify-center">
-                <Bot className="h-8 w-8" />
+              <div className="p-3 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg border border-indigo-400 w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                <Bot className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">
                 Start a conversation
               </h3>
-              <p className="text-gray-600 text-sm mb-6 max-w-md mx-auto">
+              <p className="text-gray-500 text-xs mb-4 max-w-md mx-auto">
                 Ask me to analyze your JSON files, generate schemas, or create ETL code
               </p>
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 max-w-lg mx-auto border border-blue-200">
-                <div className="flex items-center justify-center mb-4">
-                  <span className="text-2xl">💡</span>
-                  <span className="ml-2 text-sm font-semibold text-blue-800">Try saying:</span>
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 max-w-lg mx-auto border border-blue-200">
+                <div className="flex items-center justify-center mb-3">
+                  <span className="text-lg">💡</span>
+                  <span className="ml-2 text-xs font-semibold text-blue-800">Try saying:</span>
                 </div>
-                <div className="space-y-3 text-sm text-blue-700 text-left">
+                <div className="space-y-2 text-xs text-blue-700 text-left">
                   <div className="flex items-start space-x-2">
                     <span className="text-blue-500 mt-0.5">•</span>
                     <span>"Create a normalized schema for my JSON data"</span>
@@ -246,14 +247,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
                 }`}>
                   {/* Avatar */}
-                  <div className={`p-2.5 rounded-full ${getIconContainerStyle(message.type)} flex-shrink-0`}>
+                  <div className={`p-2 rounded-full ${getIconContainerStyle(message.type)} flex-shrink-0`}>
                     {getMessageIcon(message.type)}
                   </div>
                   
                   {/* Message Content */}
-                  <div className={`p-4 rounded-2xl ${getMessageStyle(message.type)} relative`}>
+                  <div className={`p-3 rounded-xl ${getMessageStyle(message.type)} relative`}>
                     {/* Message Type Label */}
-                    <div className={`text-xs font-semibold uppercase tracking-wide mb-2 ${
+                    <div className={`text-xs font-semibold uppercase tracking-wide mb-1.5 ${
                       message.type === 'user' 
                         ? 'text-blue-100' 
                         : message.type === 'error'
@@ -269,7 +270,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </div>
                     
                     {/* Message Text */}
-                    <div className="text-sm leading-relaxed prose prose-sm max-w-none">
+                    <div className="text-xs leading-relaxed prose prose-sm max-w-none">
                       {message.type === 'assistant' ? (
                         <ReactMarkdown 
                           remarkPlugins={[remarkGfm]}
@@ -318,18 +319,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     </div>
                     
                     {/* Timestamp */}
-                    <div className={`text-xs mt-2 ${
+                    <div className={`text-xs mt-1.5 ${
                       message.type === 'user' 
                         ? 'text-blue-100' 
-                        : 'text-gray-500'
+                        : 'text-gray-400'
                     }`}>
                       {message.timestamp.toLocaleTimeString()}
                     </div>
                     
                     {/* Code Preview */}
                     {message.code && (
-                      <div className="mt-4 p-4 bg-gray-900 text-green-400 rounded-lg text-xs font-mono overflow-x-auto border border-gray-700">
-                        <div className="flex items-center justify-between mb-2">
+                      <div className="mt-3 p-3 bg-gray-900 text-green-400 rounded-lg text-xs font-mono overflow-x-auto border border-gray-700">
+                        <div className="flex items-center justify-between mb-1.5">
                           <span className="text-gray-400 text-xs font-semibold">CODE PREVIEW</span>
                           <button 
                             className="text-blue-400 hover:text-blue-300 text-xs font-medium transition-colors"
@@ -348,16 +349,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               {/* Loading Indicator */}
               {isLoading && (
                 <div className="flex items-start space-x-3">
-                  <div className="p-2.5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md border border-indigo-400 flex-shrink-0">
-                    <Bot className="h-5 w-5" />
+                  <div className="p-2 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-md border border-indigo-400 flex-shrink-0">
+                    <Bot className="h-4 w-4" />
                   </div>
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-white text-gray-900 mr-auto max-w-2xl shadow-md border border-gray-200">
-                    <div className="text-xs font-semibold uppercase tracking-wide mb-2 text-indigo-600">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-white text-gray-900 mr-auto max-w-2xl shadow-md border border-gray-100">
+                    <div className="text-xs font-semibold uppercase tracking-wide mb-1.5 text-indigo-600">
                       Claude
                     </div>
-                    <div className="flex items-center space-x-3">
-                      <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
-                      <span className="text-sm">Thinking...</span>
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-600" />
+                      <span className="text-xs">Thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -365,12 +366,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </>
           )}
           <div ref={messagesEndRef} />
-        </div>
+            </div>
+          </ScrollArea>
+        </CardContent>
 
         {/* Input Form */}
-        <div className="border-t border-gray-200 p-4">
-          <form onSubmit={handleSubmit} className="flex space-x-2">
-            <input
+        <CardContent className="border-t p-4">
+          <form onSubmit={handleSubmit} className="flex space-x-3">
+            <Input
               ref={inputRef}
               type="text"
               value={input}
@@ -381,22 +384,23 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                   : "Connecting to Claude..."
               }
               disabled={!isConnected || isLoading}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-xs"
             />
-            <button
+            <Button
               type="submit"
               disabled={!input.trim() || !isConnected || isLoading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center"
+              size="sm"
+              className="text-xs font-medium"
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
               ) : (
-                <Send className="h-4 w-4" />
+                <Send className="h-3.5 w-3.5" />
               )}
-            </button>
+            </Button>
           </form>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
