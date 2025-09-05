@@ -1,0 +1,245 @@
+{
+  "flights": [
+    {
+      "flight_id": "AA1234",
+      "airline": "American Airlines",
+      "aircraft_type": "Boeing 737-800",
+      "departure": {
+        "airport_code": "LAX",
+        "airport_name": "Los Angeles International Airport",
+        "city": "Los Angeles",
+        "country": "United States",
+        "terminal": "Terminal 4",
+        "gate": "A12",
+        "datetime": "2024-01-15T08:30:00Z"
+      },
+      "arrival": {
+        "airport_code": "JFK",
+        "airport_name": "John F. Kennedy International Airport",
+        "city": "New York",
+        "country": "United States",
+        "terminal": "Terminal 8",
+        "gate": "B15",
+        "datetime": "2024-01-15T16:45:00Z"
+      },
+      "duration_minutes": 495,
+      "distance_miles": 2475,
+      "price": {
+        "base_fare": 299.00,
+        "taxes": 45.50,
+        "fees": 25.00,
+        "total": 369.50,
+        "currency": "USD"
+      },
+      "passenger": {
+        "name": "John Smith",
+        "email": "john.smith@email.com",
+        "phone": "+1-555-0123",
+        "passport": "A12345678",
+        "seat": "12A",
+        "class": "Economy"
+      },
+      "booking": {
+        "booking_reference": "AA123456789",
+        "booking_date": "2024-01-10T14:22:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      }
+    },
+    {
+      "flight_id": "DL5678",
+      "airline": "Delta Air Lines",
+      "aircraft_type": "Airbus A320",
+      "departure": {
+        "airport_code": "ATL",
+        "airport_name": "Hartsfield-Jackson Atlanta International Airport",
+        "city": "Atlanta",
+        "country": "United States",
+        "terminal": "Terminal S",
+        "gate": "C8",
+        "datetime": "2024-01-16T14:20:00Z"
+      },
+      "arrival": {
+        "airport_code": "MIA",
+        "airport_name": "Miami International Airport",
+        "city": "Miami",
+        "country": "United States",
+        "terminal": "Terminal D",
+        "gate": "E22",
+        "datetime": "2024-01-16T16:35:00Z"
+      },
+      "duration_minutes": 135,
+      "distance_miles": 662,
+      "price": {
+        "base_fare": 189.00,
+        "taxes": 32.50,
+        "fees": 15.00,
+        "total": 236.50,
+        "currency": "USD"
+      },
+      "passenger": {
+        "name": "Sarah Johnson",
+        "email": "sarah.j@email.com",
+        "phone": "+1-555-0456",
+        "passport": "B98765432",
+        "seat": "8F",
+        "class": "Economy"
+      },
+      "booking": {
+        "booking_reference": "DL987654321",
+        "booking_date": "2024-01-12T09:15:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      }
+    },
+    {
+      "flight_id": "UA9012",
+      "airline": "United Airlines",
+      "aircraft_type": "Boeing 777-300ER",
+      "departure": {
+        "airport_code": "SFO",
+        "airport_name": "San Francisco International Airport",
+        "city": "San Francisco",
+        "country": "United States",
+        "terminal": "Terminal 3",
+        "gate": "F5",
+        "datetime": "2024-01-17T22:15:00Z"
+      },
+      "arrival": {
+        "airport_code": "LHR",
+        "airport_name": "London Heathrow Airport",
+        "city": "London",
+        "country": "United Kingdom",
+        "terminal": "Terminal 2",
+        "gate": "A18",
+        "datetime": "2024-01-18T14:30:00Z"
+      },
+      "duration_minutes": 675,
+      "distance_miles": 5356,
+      "price": {
+        "base_fare": 899.00,
+        "taxes": 125.50,
+        "fees": 45.00,
+        "total": 1069.50,
+        "currency": "USD"
+      },
+      "passenger": {
+        "name": "Michael Brown",
+        "email": "m.brown@email.com",
+        "phone": "+1-555-0789",
+        "passport": "C45678901",
+        "seat": "15B",
+        "class": "Premium Economy"
+      },
+      "booking": {
+        "booking_reference": "UA456789012",
+        "booking_date": "2024-01-08T16:30:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "2 carry-on, 2 checked bags"
+      }
+    },
+    {
+      "flight_id": "BA3456",
+      "airline": "British Airways",
+      "aircraft_type": "Airbus A350-1000",
+      "departure": {
+        "airport_code": "LHR",
+        "airport_name": "London Heathrow Airport",
+        "city": "London",
+        "country": "United Kingdom",
+        "terminal": "Terminal 5",
+        "gate": "B12",
+        "datetime": "2024-01-19T11:45:00Z"
+      },
+      "arrival": {
+        "airport_code": "CDG",
+        "airport_name": "Charles de Gaulle Airport",
+        "city": "Paris",
+        "country": "France",
+        "terminal": "Terminal 2E",
+        "gate": "K8",
+        "datetime": "2024-01-19T13:20:00Z"
+      },
+      "duration_minutes": 95,
+      "distance_miles": 344,
+      "price": {
+        "base_fare": 245.00,
+        "taxes": 38.75,
+        "fees": 22.50,
+        "total": 306.25,
+        "currency": "GBP"
+      },
+      "passenger": {
+        "name": "Emma Wilson",
+        "email": "emma.wilson@email.com",
+        "phone": "+44-20-7946-0958",
+        "passport": "GB123456789",
+        "seat": "6A",
+        "class": "Business"
+      },
+      "booking": {
+        "booking_reference": "BA789012345",
+        "booking_date": "2024-01-14T10:45:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "2 carry-on, 3 checked bags"
+      }
+    },
+    {
+      "flight_id": "AF7890",
+      "airline": "Air France",
+      "aircraft_type": "Boeing 787-9 Dreamliner",
+      "departure": {
+        "airport_code": "CDG",
+        "airport_name": "Charles de Gaulle Airport",
+        "city": "Paris",
+        "country": "France",
+        "terminal": "Terminal 2F",
+        "gate": "L15",
+        "datetime": "2024-01-20T16:30:00Z"
+      },
+      "arrival": {
+        "airport_code": "NRT",
+        "airport_name": "Narita International Airport",
+        "city": "Tokyo",
+        "country": "Japan",
+        "terminal": "Terminal 1",
+        "gate": "A25",
+        "datetime": "2024-01-21T09:15:00Z"
+      },
+      "duration_minutes": 705,
+      "distance_miles": 5843,
+      "price": {
+        "base_fare": 1299.00,
+        "taxes": 185.25,
+        "fees": 65.00,
+        "total": 1549.25,
+        "currency": "EUR"
+      },
+      "passenger": {
+        "name": "Yuki Tanaka",
+        "email": "y.tanaka@email.com",
+        "phone": "+81-3-1234-5678",
+        "passport": "JP987654321",
+        "seat": "22C",
+        "class": "Economy"
+      },
+      "booking": {
+        "booking_reference": "AF234567890",
+        "booking_date": "2024-01-11T13:20:00Z",
+        "status": "confirmed",
+        "check_in_available": true,
+        "baggage_allowance": "1 carry-on, 1 checked bag"
+      }
+    }
+  ],
+  "metadata": {
+    "total_flights": 5,
+    "generated_date": "2024-01-20T00:00:00Z",
+    "data_version": "1.0",
+    "description": "Sample flight booking data for ETL testing"
+  }
+}

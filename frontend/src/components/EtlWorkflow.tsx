@@ -157,7 +157,7 @@ export const EtlWorkflow: React.FC = () => {
       <ResizablePanelGroup direction="horizontal" className="h-full">
         {/* Left Side - Code Editor */}
         <ResizablePanel defaultSize={60} minSize={30} maxSize={80}>
-          <Card className="h-full border-0 !bg-[#FCFBF8]">
+          <Card className="h-full border-0 !bg-[#FCFBF8] shadow-none">
             <CardHeader
               className="flex-row items-center justify-between space-y-0"
               style={{ height: '60px', padding: '16px' }}
