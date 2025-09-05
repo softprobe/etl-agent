@@ -128,6 +128,21 @@ export const EtlWorkflow: React.FC = () => {
     }
   };
 
+  const loadMockSchemas = async () => {
+    try {
+      const response = await fetch('/mockSchemas.json');
+      const data = await response.json();
+      setSchemas(data.schemas);
+      setWorkflowState(prev => ({
+        ...prev,
+        step: 'schema'
+      }));
+    } catch (err) {
+      console.error('Failed to load mock schemas:', err);
+      setError('Failed to load mock schemas');
+    }
+  };
+
   const getStepStatus = (stepId: string) => {
     const currentIndex = WORKFLOW_STEPS.findIndex(s => s.id === workflowState.step);
     const stepIndex = WORKFLOW_STEPS.findIndex(s => s.id === stepId);
@@ -284,12 +299,26 @@ export const EtlWorkflow: React.FC = () => {
               <div className="space-y-6">
                 {/* Step 1: File Upload */}
                 {workflowState.step === 'upload' && (
-                  <FileUpload
-                    onFilesUpload={handleFilesUpload}
-                    uploadedFiles={fileUpload.uploadedFiles}
-                    loading={fileUpload.loading}
-                    error={fileUpload.error}
-                  />
+                  <div className="space-y-4">
+                    <FileUpload
+                      onFilesUpload={handleFilesUpload}
+                      uploadedFiles={fileUpload.uploadedFiles}
+                      loading={fileUpload.loading}
+                      error={fileUpload.error}
+                    />
+                    
+                    {/* Mock Data Button */}
+                    {/* <div className="flex justify-center">
+                      <Button
+                        onClick={loadMockSchemas}
+                        variant="outline"
+                        size="sm"
+                        className="text-xs"
+                      >
+                        🧪 Load Mock Flight Data (for testing)
+                      </Button>
+                    </div> */}
+                  </div>
                 )}
 
                 {/* Step 2: Schema Preview */}
