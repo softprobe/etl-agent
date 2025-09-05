@@ -11,31 +11,26 @@ import mimetypes
 
 from .services.claude_service import ClaudeETLAgent
 from .models.etl import DDLRequest, UploadResponse
+from .utils.workspace import setup_workspace, cleanup_workspace
 
 app = FastAPI(title="Agentic ETL Engineer", version="0.1.0")
 
 # Global variables
 WORK_DIR = None
+INSTANCE_ID = None
 claude_agent = None
 
 @app.on_event("startup")
 async def startup_tasks():
     """Initialize app components on startup"""
-    global WORK_DIR, claude_agent
+    global WORK_DIR, INSTANCE_ID, claude_agent
     
-    # Create clean working directory
-    WORK_DIR = Path("uploads")
-    if WORK_DIR.exists():
-        shutil.rmtree(WORK_DIR)
-    WORK_DIR.mkdir(exist_ok=True)
-    work_dir = WORK_DIR.absolute()
-    print(f"📁 Created clean working directory: {work_dir}")
-    # Set the current director to the WORK_DIR
-    os.chdir(work_dir)   
+    # Setup workspace with timestamp-based instance ID
+    INSTANCE_ID, WORK_DIR = setup_workspace()
     
-    # Initialize Claude agent with uploads directory
-    claude_agent = ClaudeETLAgent(work_dir=str(work_dir))
-    print(f"🤖 Initialized Claude ETL Agent with working directory: {work_dir}")
+    # Initialize Claude agent with workspace directory
+    claude_agent = ClaudeETLAgent(work_dir=str(WORK_DIR))
+    print(f"🤖 Initialized Claude ETL Agent with workspace: {WORK_DIR}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -77,40 +72,6 @@ async def upload_files(files: List[UploadFile] = File(...)):
         return JSONResponse(
             status_code=400,
             content={"error": f"Failed to upload files: {str(e)}"}
-        )
-
-@app.post("/api/generate-ddl")
-async def generate_ddl(request: DDLRequest):
-    """Generate BigQuery DDL from JSON schema"""
-    try:
-        ddl = await claude_agent.generate_ddl(
-            json_schemas=request.json_files,
-            table_name=request.table_name,
-            dataset_id=request.dataset_id,
-            user_requirements=request.user_requirements
-        )
-        return {"ddl": ddl}
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"error": f"Failed to generate DDL: {str(e)}"}
-        )
-
-@app.post("/api/generate-etl")
-async def generate_etl(request: DDLRequest):
-    """Generate ETL code"""
-    try:
-        etl_code = await claude_agent.generate_etl_code(
-            json_schemas=request.json_files,
-            table_name=request.table_name,
-            dataset_id=request.dataset_id,
-            user_requirements=request.user_requirements
-        )
-        return {"etl_code": etl_code}
-    except Exception as e:
-        return JSONResponse(
-            status_code=500,
-            content={"error": f"Failed to generate ETL: {str(e)}"}
         )
 
 @app.websocket("/ws/chat")
@@ -176,22 +137,36 @@ async def chat_endpoint(websocket: WebSocket):
 
 @app.get("/api/files")
 async def list_files():
-    """Simple directory listing"""
+    """Directory listing with both files and folders"""
     import os
-    files = []
+    items = []
+    
     for root, dirs, filenames in os.walk("."):
         # Skip hidden and common ignore patterns
         dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ['__pycache__', 'node_modules']]
+        
+        # Add directories
+        for dirname in dirs:
+            dirpath = os.path.join(root, dirname)
+            items.append({
+                "id": dirpath,
+                "name": dirname,
+                "path": dirpath,
+                "isFolder": True
+            })
+        
+        # Add files
         for filename in filenames:
             if not filename.startswith('.'):
                 filepath = os.path.join(root, filename)
-                files.append({
+                items.append({
                     "id": filepath,
                     "name": filename, 
                     "path": filepath,
                     "isFolder": False
                 })
-    return files
+    
+    return items
 
 @app.get("/api/file/{file_path:path}")
 async def get_file(file_path: str):
@@ -250,6 +225,34 @@ async def cleanup_chat_session():
         return JSONResponse(
             status_code=500,
             content={"error": f"Failed to cleanup session: {str(e)}"}
+        )
+
+@app.post("/api/workspace/cleanup")
+async def cleanup_workspace_endpoint():
+    """Clean up the current workspace instance"""
+    try:
+        global WORK_DIR
+        if WORK_DIR:
+            cleanup_workspace(WORK_DIR)
+        return {"status": "success", "message": f"Workspace {INSTANCE_ID} cleaned up"}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to cleanup workspace: {str(e)}"}
+        )
+
+@app.get("/api/workspace/info")
+async def get_workspace_info():
+    """Get information about the current workspace"""
+    try:
+        from .utils.workspace import get_workspace_info
+        info = get_workspace_info(WORK_DIR) if WORK_DIR else {}
+        info["instance_id"] = INSTANCE_ID
+        return {"status": "success", "workspace": info}
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to get workspace info: {str(e)}"}
         )
 
 @app.get("/health")

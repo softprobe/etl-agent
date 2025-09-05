@@ -1,0 +1,78 @@
+{
+  "business_entities": [
+    {
+      "name": "Order",
+      "type": "transaction",
+      "primary_key": "order_id",
+      "description": "E-commerce order transaction"
+    },
+    {
+      "name": "Customer", 
+      "type": "entity",
+      "primary_key": "customer_id",
+      "description": "Customer information"
+    },
+    {
+      "name": "OrderItem",
+      "type": "line_item", 
+      "primary_key": null,
+      "parent_entity": "Order",
+      "description": "Individual items within an order"
+    },
+    {
+      "name": "Product",
+      "type": "catalog",
+      "primary_key": "product_id",
+      "description": "Product catalog information"
+    }
+  ],
+  "suggested_schema": {
+    "orders": {
+      "order_id": {"type": "STRING", "nullable": false, "description": "Unique order identifier"},
+      "customer_id": {"type": "INTEGER", "nullable": false, "description": "Customer identifier"},
+      "customer_email": {"type": "STRING", "nullable": false, "description": "Customer email address"},
+      "order_date": {"type": "TIMESTAMP", "nullable": false, "description": "Order creation timestamp"},
+      "status": {"type": "STRING", "nullable": false, "description": "Order status"},
+      "total_amount": {"type": "FLOAT", "nullable": false, "description": "Total order amount"},
+      "currency": {"type": "STRING", "nullable": false, "description": "Currency code"},
+      "shipping_street": {"type": "STRING", "nullable": true, "description": "Shipping address street"},
+      "shipping_city": {"type": "STRING", "nullable": true, "description": "Shipping address city"},
+      "shipping_state": {"type": "STRING", "nullable": true, "description": "Shipping address state"},
+      "shipping_zip": {"type": "STRING", "nullable": true, "description": "Shipping address zip code"},
+      "shipping_country": {"type": "STRING", "nullable": true, "description": "Shipping address country"},
+      "payment_method": {"type": "STRING", "nullable": true, "description": "Payment method used"},
+      "transaction_id": {"type": "STRING", "nullable": true, "description": "Payment transaction ID"},
+      "shipping_method": {"type": "STRING", "nullable": true, "description": "Shipping method"},
+      "shipping_cost": {"type": "FLOAT", "nullable": true, "description": "Shipping cost"}
+    },
+    "order_items": {
+      "order_id": {"type": "STRING", "nullable": false, "description": "Reference to order"},
+      "product_id": {"type": "STRING", "nullable": false, "description": "Product identifier"},
+      "product_name": {"type": "STRING", "nullable": false, "description": "Product name"},
+      "category": {"type": "STRING", "nullable": true, "description": "Product category"},
+      "quantity": {"type": "INTEGER", "nullable": false, "description": "Item quantity"},
+      "unit_price": {"type": "FLOAT", "nullable": false, "description": "Price per unit"},
+      "total_price": {"type": "FLOAT", "nullable": false, "description": "Total price for this item"}
+    }
+  },
+  "confidence_scores": {
+    "schema_detection": 0.95,
+    "business_entity_detection": 0.90,
+    "data_type_inference": 0.92,
+    "relationship_detection": 0.85
+  },
+  "potential_issues": [
+    {
+      "type": "nested_structure",
+      "description": "Nested shipping_address and items arrays need flattening",
+      "severity": "medium",
+      "suggested_solution": "Create separate tables for order_items and flatten shipping address fields"
+    },
+    {
+      "type": "optional_fields",
+      "description": "Some payment fields may be missing depending on payment method", 
+      "severity": "low",
+      "suggested_solution": "Mark payment-specific fields as nullable"
+    }
+  ]
+}

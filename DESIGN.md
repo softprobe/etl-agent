@@ -21,46 +21,73 @@ Based on product design reviews, competitive research, and user research insight
 - Matillion Maia: Visual ETL builder with AI enhancement, 80% users never see underlying code
 - Pattern: Start conversational, show visual results, hide code complexity by default
 
-### Product Roadmap
+### Product Roadmap (Updated for Two-Step CSV Approach)
 
-#### Phase 1: Local Data Processing with Visual Validation (4-6 weeks)
-**Target Users:** Data analysts and product managers who need to understand their JSON data structure
+#### Phase 1A: JSON to CSV Schema Preview and Validation (Week 1)
+**Target Users:** Data analysts and product managers who need immediate schema validation
 
 **Core Features:**
-- JSON file upload and analysis
-- Visual schema preview ("Your JSON will become these BigQuery tables")
-- Sample data transformation preview with pandas
-- Interactive data visualization and validation
-- Claude Code SDK powered Python ETL code generation (viewable but not emphasized)
-- Local execution with immediate visual results
+- JSON file upload and analysis with instant feedback
+- CSV schema inference and preview ("Your JSON will become these CSV columns")
+- Interactive schema editing before transformation
+- Real-time schema validation with immediate user feedback
 
 **Technical Stack:**
-- Frontend: React + file upload + data visualization components (D3.js/Chart.js)
-- Backend: FastAPI + Claude API + pandas + matplotlib/plotly for data preview
-- Data Processing: pandas DataFrames (local processing only)
-- Output: Python ETL scripts + visual data previews
+- Frontend: React + drag-drop upload + schema preview components
+- Backend: FastAPI + Claude SDK for schema inference
+- Data Processing: JSON analysis with CSV schema generation
+- Output: Proposed CSV schema + user validation interface
 
-**Success Metrics:**
-- Can users successfully upload JSON and understand the proposed table structure?
-- Do visual previews reduce user anxiety about data transformation?
-- What percentage of users request code editing vs natural language iteration?
-
-#### Phase 2: BigQuery Integration (2-3 weeks)
+#### Phase 1B: ETL Script Generation for CSV Output (Week 1-2)
 **Core Features:**
-- Deploy pandas-generated ETL code to process data in BigQuery
-- Schema creation in BigQuery datasets
-- Basic data upload and transformation execution
-- Simple monitoring and status reporting
+- Generate Python ETL scripts based on validated schema
+- Execute scripts locally to produce actual CSV files
+- Data validation and error handling for malformed JSON
+- CSV file download and inspection capabilities
 
 **Technical Additions:**
-- Google Cloud BigQuery integration
-- Authentication and project management
-- ETL job execution tracking
+- Python ETL code generation with Claude SDK
+- Local script execution environment
+- CSV validation and quality checks
+- Error handling and recovery mechanisms
 
-#### Phase 3: Cloud Run Deployment (3-4 weeks)
+#### Phase 1C: CSV Query Generation and Execution (Week 2-3)
+**Core Features:**
+- Natural language question interpretation
+- Generate pandas/Python code to query CSV files
+- Execute queries against local CSV data
+- Results validation and accuracy checking
+
+**Technical Additions:**
+- Question-to-code generation with Claude SDK
+- pandas query execution environment
+- Query results validation framework
+- Interactive query refinement interface
+
+#### Phase 1D: Results Preview with Tables and Charts (Week 3-4)
+**Core Features:**
+- Display query results in formatted tables
+- Generate appropriate visualizations (bar, line, pie charts)
+- Interactive preview with chart type selection
+- Results export and sharing capabilities
+
+**Technical Additions:**
+- Table rendering components
+- Chart generation library integration
+- Interactive visualization controls
+- Results export functionality
+
+#### Phase 2: BigQuery Integration (Week 4-6)
+**Core Features:**
+- Convert validated CSV ETL to BigQuery-compatible code
+- BigQuery table creation based on validated CSV schemas
+- Data loading from CSV to BigQuery tables
+- Query execution against BigQuery instead of local CSV
+
+#### Phase 3: Cloud Run Deployment (Week 6-10)
 **Core Features:**
 - Package ETL jobs as containerized Cloud Run services
-- Automated deployment pipeline
+- Automated deployment pipeline from validated code
 - Scheduled ETL job execution
 - Enhanced monitoring and alerting
 
@@ -249,28 +276,38 @@ class ETLProcessor:
 1. **Data Analysts**: Some technical comfort, understand SQL and normalization
 2. **Product Managers**: Want insights from JSON data, not ETL engineering
 
-### Core User Flow (Hybrid Approach)
+### Core User Flow (Four-Step Phased Approach)
 ```
-JSON Upload → Agent Analysis → Generated Code → Visual Preview → User Decision → Deploy
+Phase 1A: JSON Upload → Schema Preview → User Validation → Schema Approval
+Phase 1B: Approved Schema → ETL Code Generation → CSV Generation → CSV Validation
+Phase 1C: CSV Files → Question Input → Query Code Generation → Local Query Execution
+Phase 1D: Query Results → Table Display → Chart Generation → Results Preview
+Phase 2+: CSV Schema → BigQuery DDL → BigQuery ETL → Cloud Run Deployment
 ```
 
 **Progressive Disclosure Flow:**
-1. **Beginner Mode**: "Create 3 normalized tables vs 1 denormalized table?"
-2. **Intermediate**: Show table structure preview with row counts and relationships
-3. **Advanced**: Allow code editing and custom transformations
-4. **Results-First Alternative**: Auto-generate insights dashboard → optional ETL customization
+1. **Schema Preview**: "Your JSON will create these CSV columns" with editing capability
+2. **ETL Validation**: Show generated Python code with CSV output preview
+3. **Query Testing**: Natural language questions with pandas code generation
+4. **Results Validation**: Tables and charts before BigQuery deployment
+5. **Production Deployment**: Only after local validation success
 
-### Visual Preview Example
+### Visual Preview Example (CSV-First)
 ```
-Table: users (1,234 rows)
+CSV: users.csv (1,234 rows)
 ├── user_id (INTEGER)
 ├── name (STRING) 
 └── email (STRING)
 
-Table: orders (5,678 rows)  
-├── user_id (INTEGER) → users.user_id
+CSV: orders.csv (5,678 rows)  
+├── user_id (INTEGER) → links to users.user_id
 ├── order_id (INTEGER)
 └── items (JSON)
+
+Query Examples:
+- "How many users are there?" → df['users'].shape[0]
+- "Average order value?" → df['orders']['total'].mean()
+- "Top cities by user count?" → df['users'].groupby('city').size()
 ```
 
 ### Legacy Data Flow (Technical Reference)

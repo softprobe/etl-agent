@@ -132,25 +132,45 @@ const useWebSocketChat = () => {
 };
 ```
 
-## Basic Workflow
+## Basic Workflow (Four-Phase Approach)
 
-### User Interaction Flow
-
+### Phase 1A: Schema Preview and Validation
 1. **JSON Upload** → User uploads JSON files via drag-and-drop interface
-2. **Agent Analysis** → Claude SDK analyzes JSON structure and infers BigQuery schema
-3. **Generated Code** → Real-time ETL code generation displayed in Monaco editor
-4. **Visual Preview** → Schema preview shows proposed BigQuery table structure
-5. **User Decision** → User approves, modifies, or iterates via chat
-6. **Deploy** → Generated code ready for BigQuery deployment
+2. **Schema Inference** → Claude SDK analyzes JSON and infers CSV schema
+3. **Smart Preview** → Show schema as business entities, not technical tables
+   - Preview actual data transformations with confidence indicators
+   - Binary choices on uncertainties: "Include partial records?" Y/N
+   - One-click fixes for common issues: "Standardize date formats"
+4. **User Validation** → User approves or modifies schema before proceeding
 
-### Data Flow
+### Phase 1B: ETL Code Generation and CSV Output
+5. **ETL Generation** → Generate Python scripts based on validated schema
+6. **Code Display** → Show generated ETL code in Monaco editor
+7. **CSV Generation** → Execute scripts locally to produce actual CSV files
+8. **CSV Validation** → User inspects and validates generated CSV output
+
+### Phase 1C: Query Generation and Execution
+9. **Question Input** → User asks natural language questions about data
+10. **Query Generation** → Generate pandas/Python code to answer questions
+11. **Local Execution** → Run queries against CSV files locally
+12. **Results Validation** → Verify query results are accurate and meaningful
+
+### Phase 1D: Results Visualization
+13. **Table Display** → Show query results in formatted tables
+14. **Chart Generation** → Create appropriate visualizations for results
+15. **Interactive Preview** → Allow user to iterate on questions and visualizations
+16. **Results Export** → Download results and visualizations
+
+### Data Flow (Phase-by-Phase)
 
 ```
-JSON Files → FastAPI Upload → Claude SDK Analysis → {
-  ├── ETL Code → Monaco Editor Display
-  ├── Schema Info → Visual Preview Component
-  └── Chat Response → Chat Interface
-}
+Phase 1A: JSON Files → Schema Analysis → Schema Preview → User Validation
+Phase 1B: Validated Schema → ETL Generation → CSV Files → CSV Validation
+Phase 1C: CSV Files + Questions → Query Generation → Query Results → Results Validation
+Phase 1D: Query Results → Table/Chart Display → Interactive Preview → Results Export
+
+Full Pipeline:
+JSON → Schema → ETL Code → CSV → Queries → Results → Visualizations → (Later: BigQuery)
 ```
 
 ## Risk Assessment
@@ -180,47 +200,102 @@ JSON Files → FastAPI Upload → Claude SDK Analysis → {
    - Risk: Large JSON files + Monaco rendering + Claude responses
    - Mitigation: Implement file size limits, lazy loading, and pagination
 
-### Success Criteria
+### Success Criteria (Phase-by-Phase)
 
-- **Core Workflow**: User uploads JSON → Chat generates ETL code → Monaco displays code → Schema shows preview
-- **Performance**: End-to-end workflow completes in <30 seconds
-- **State Management**: State persists across component interactions
-- **User Experience**: Non-technical users can complete workflow without coding knowledge
+**Phase 1A Success:**
+- JSON upload and schema inference works >98% of the time
+- Schema preview displays clearly for non-technical users
+- Users can modify schema before proceeding
 
-## Implementation Plan
+**Phase 1B Success:**
+- Generated ETL code produces valid CSV files >98% of the time
+- CSV output matches expected schema structure
+- Code executes without syntax errors
 
-### Phase 1: Core Integration (Week 1)
+**Phase 1C Success:**
+- Natural language questions generate working pandas code >95% of the time
+- Query execution produces accurate results >90% of the time
+- Basic analytical questions are supported (count, sum, group by, filter)
 
-**Day 1-2: FastAPI + Claude SDK Setup**
-- Install and configure Claude Python SDK
-- Basic FastAPI service with WebSocket endpoint
-- Test Claude SDK with simple ETL code generation prompts
+**Phase 1D Success:**
+- Tables display correctly 100% of the time
+- Charts are generated for appropriate query types >80% of the time
+- Interactive preview loads within 3 seconds
 
-**Day 3-4: Frontend WebSocket Integration**
-- React WebSocket chat interface
-- Monaco editor with basic code display
-- Test real-time communication between components
+**Overall POC Success:**
+- End-to-end workflow completes successfully >90% of the time
+- Non-technical users can complete workflow with minimal guidance
+- Each phase provides standalone value and validation
 
-**Day 5-6: Basic Schema Preview**
-- JSON file upload handling
-- Simple schema preview component (text-based)
-- Integration with Claude SDK for schema analysis
+## Implementation Plan (Updated for Phased Approach)
 
-### Phase 2: Enhanced Features (Week 2)
+### Week 1: Phase 1A - Schema Preview and Validation
 
-**Week 2: Full Workflow Testing**
-- Complete user workflow implementation
-- Visual schema preview enhancements
-- Error handling and edge cases
-- Performance optimization for larger files
+**Day 1-2: JSON Upload and Analysis**
+- FastAPI + Claude SDK setup and configuration
+- JSON file upload endpoint with basic validation
+- Claude SDK integration for schema inference
 
-### Phase 3: Validation (Week 3)
+**Day 3-4: Schema Preview Interface**
+- React schema preview component (text-based initially)
+- User validation interface with approve/modify options
+- WebSocket integration for real-time schema updates
 
-**User Testing & Iteration**
-- Test with real JSON datasets
-- Validate generated ETL code quality
-- User experience testing
-- Technical performance benchmarking
+**Day 5: Integration and Testing**
+- End-to-end Phase 1A workflow testing
+- Schema accuracy validation with test JSON files
+- User interface refinement
+
+### Week 2: Phase 1B - ETL Generation and CSV Output
+
+**Day 1-2: ETL Code Generation**
+- Claude SDK integration for Python ETL code generation
+- Monaco editor integration for code display
+- Local script execution environment setup
+
+**Day 3-4: CSV Generation and Validation**
+- ETL script execution and CSV file generation
+- CSV validation and quality checks
+- Error handling for malformed data
+
+**Day 5: CSV Download and Inspection**
+- CSV file download functionality
+- CSV preview in the UI
+- Integration testing for Phase 1A + 1B
+
+### Week 3: Phase 1C - Query Generation and Execution
+
+**Day 1-2: Natural Language Query Processing**
+- Question interpretation and pandas code generation
+- Query execution environment with error handling
+- Basic analytical query support (count, sum, filter)
+
+**Day 3-4: Query Results and Validation**
+- Results display and validation components
+- Query accuracy testing framework
+- Interactive query refinement interface
+
+**Day 5: Integration Testing**
+- End-to-end testing for Phases 1A + 1B + 1C
+- Performance testing with various JSON datasets
+- User experience validation
+
+### Week 4: Phase 1D - Results Visualization
+
+**Day 1-2: Table and Chart Generation**
+- Results table display components
+- Chart generation library integration
+- Chart type selection logic
+
+**Day 3-4: Interactive Preview and Export**
+- Interactive visualization controls
+- Results export functionality (CSV, images)
+- Performance optimization for large result sets
+
+**Day 5: Complete POC Validation**
+- Full workflow testing (1A → 1B → 1C → 1D)
+- User acceptance testing with real datasets
+- Documentation and handoff preparation
 
 ## Critical Validation Questions
 

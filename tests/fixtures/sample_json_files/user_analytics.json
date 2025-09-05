@@ -1,0 +1,66 @@
+[
+  {
+    "user_id": "user_123",
+    "session_id": "sess_abc789",
+    "timestamp": "2024-01-15T09:45:30.123Z",
+    "event_type": "page_view",
+    "page": "/dashboard",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "ip_address": "192.168.1.100",
+    "referrer": "https://google.com/search",
+    "properties": {
+      "page_title": "User Dashboard",
+      "load_time_ms": 1250,
+      "viewport_width": 1920,
+      "viewport_height": 1080
+    },
+    "user_properties": {
+      "account_type": "premium",
+      "signup_date": "2023-06-15",
+      "total_sessions": 45,
+      "last_login": "2024-01-14T18:30:00Z"
+    }
+  },
+  {
+    "user_id": "user_456",
+    "session_id": "sess_def456",
+    "timestamp": "2024-01-15T10:12:45.567Z",
+    "event_type": "button_click",
+    "page": "/products",
+    "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+    "ip_address": "10.0.0.50",
+    "properties": {
+      "button_text": "Add to Cart",
+      "product_id": "PROD-789",
+      "category": "Electronics",
+      "price": 299.99
+    },
+    "user_properties": {
+      "account_type": "free",
+      "signup_date": "2024-01-10",
+      "total_sessions": 3,
+      "last_login": "2024-01-15T08:00:00Z"
+    }
+  },
+  {
+    "user_id": "user_123",
+    "session_id": "sess_abc789",
+    "timestamp": "2024-01-15T09:47:15.890Z",
+    "event_type": "form_submission",
+    "page": "/contact",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    "ip_address": "192.168.1.100",
+    "properties": {
+      "form_name": "contact_us",
+      "fields_completed": 5,
+      "time_to_complete_seconds": 180,
+      "success": true
+    },
+    "user_properties": {
+      "account_type": "premium",
+      "signup_date": "2023-06-15",
+      "total_sessions": 45,
+      "last_login": "2024-01-14T18:30:00Z"
+    }
+  }
+]

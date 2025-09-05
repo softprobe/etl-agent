@@ -1,0 +1,69 @@
+{
+  "business_entities": [
+    {
+      "name": "User",
+      "type": "entity",
+      "primary_key": "user_id", 
+      "description": "Platform user"
+    },
+    {
+      "name": "Session",
+      "type": "activity",
+      "primary_key": "session_id",
+      "description": "User session tracking"
+    },
+    {
+      "name": "Event",
+      "type": "behavioral",
+      "primary_key": null,
+      "description": "User behavior events"
+    }
+  ],
+  "suggested_schema": {
+    "user_events": {
+      "user_id": {"type": "STRING", "nullable": false, "description": "User identifier"},
+      "session_id": {"type": "STRING", "nullable": false, "description": "Session identifier"},
+      "timestamp": {"type": "TIMESTAMP", "nullable": false, "description": "Event timestamp"},
+      "event_type": {"type": "STRING", "nullable": false, "description": "Type of event"},
+      "page": {"type": "STRING", "nullable": true, "description": "Page where event occurred"},
+      "user_agent": {"type": "STRING", "nullable": true, "description": "User agent string"},
+      "ip_address": {"type": "STRING", "nullable": true, "description": "User IP address"},
+      "referrer": {"type": "STRING", "nullable": true, "description": "Referrer URL"}
+    },
+    "event_properties": {
+      "user_id": {"type": "STRING", "nullable": false, "description": "User identifier"},
+      "session_id": {"type": "STRING", "nullable": false, "description": "Session identifier"},
+      "timestamp": {"type": "TIMESTAMP", "nullable": false, "description": "Event timestamp"},
+      "property_key": {"type": "STRING", "nullable": false, "description": "Property name"},
+      "property_value": {"type": "STRING", "nullable": true, "description": "Property value"},
+      "property_type": {"type": "STRING", "nullable": true, "description": "Data type of property"}
+    },
+    "user_attributes": {
+      "user_id": {"type": "STRING", "nullable": false, "description": "User identifier"},
+      "account_type": {"type": "STRING", "nullable": true, "description": "User account type"},
+      "signup_date": {"type": "DATE", "nullable": true, "description": "User signup date"},
+      "total_sessions": {"type": "INTEGER", "nullable": true, "description": "Total session count"},
+      "last_login": {"type": "TIMESTAMP", "nullable": true, "description": "Last login timestamp"}
+    }
+  },
+  "confidence_scores": {
+    "schema_detection": 0.88,
+    "business_entity_detection": 0.85,
+    "data_type_inference": 0.90,
+    "relationship_detection": 0.80
+  },
+  "potential_issues": [
+    {
+      "type": "dynamic_properties",
+      "description": "Event properties have dynamic keys requiring normalization",
+      "severity": "high",
+      "suggested_solution": "Create separate event_properties table with key-value pairs"
+    },
+    {
+      "type": "nested_objects", 
+      "description": "Properties and user_properties are nested objects",
+      "severity": "medium",
+      "suggested_solution": "Flatten or normalize into separate tables"
+    }
+  ]
+}

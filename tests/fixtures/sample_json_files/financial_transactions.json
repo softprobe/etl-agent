@@ -1,0 +1,89 @@
+[
+  {
+    "transaction_id": "TXN-20240115-001",
+    "account_id": "ACC-123456",
+    "account_holder": {
+      "name": "John Smith",
+      "account_number": "1234567890",
+      "routing_number": "021000021"
+    },
+    "transaction_date": "2024-01-15T14:30:25Z",
+    "transaction_type": "debit",
+    "amount": -45.67,
+    "currency": "USD",
+    "description": "STARBUCKS STORE #1234",
+    "category": "food_dining",
+    "merchant": {
+      "name": "Starbucks",
+      "mcc": "5814",
+      "location": {
+        "city": "San Francisco",
+        "state": "CA",
+        "country": "US"
+      }
+    },
+    "balance_after": 1254.33,
+    "metadata": {
+      "channel": "pos",
+      "card_present": true,
+      "recurring": false
+    }
+  },
+  {
+    "transaction_id": "TXN-20240115-002", 
+    "account_id": "ACC-789012",
+    "account_holder": {
+      "name": "Alice Johnson",
+      "account_number": "9876543210",
+      "routing_number": "021000021"
+    },
+    "transaction_date": "2024-01-15T16:45:10Z",
+    "transaction_type": "credit",
+    "amount": 2500.00,
+    "currency": "USD",
+    "description": "DIRECT DEPOSIT PAYROLL",
+    "category": "income_salary",
+    "merchant": {
+      "name": "ACME Corp",
+      "mcc": "0000"
+    },
+    "balance_after": 3750.50,
+    "metadata": {
+      "channel": "ach",
+      "card_present": false,
+      "recurring": true,
+      "payroll_period": "biweekly"
+    }
+  },
+  {
+    "transaction_id": "TXN-20240115-003",
+    "account_id": "ACC-123456", 
+    "account_holder": {
+      "name": "John Smith",
+      "account_number": "1234567890",
+      "routing_number": "021000021"
+    },
+    "transaction_date": "2024-01-15T19:22:33Z",
+    "transaction_type": "debit",
+    "amount": -125.99,
+    "currency": "USD", 
+    "description": "AMAZON.COM ORDER #123-456",
+    "category": "shopping_online",
+    "merchant": {
+      "name": "Amazon",
+      "mcc": "5942",
+      "location": {
+        "city": "Seattle",
+        "state": "WA",
+        "country": "US"
+      }
+    },
+    "balance_after": 1128.34,
+    "metadata": {
+      "channel": "online",
+      "card_present": false,
+      "recurring": false,
+      "order_id": "123-456-7890"
+    }
+  }
+]

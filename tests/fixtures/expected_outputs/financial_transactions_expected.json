@@ -1,0 +1,82 @@
+{
+  "business_entities": [
+    {
+      "name": "Transaction",
+      "type": "financial_event",
+      "primary_key": "transaction_id",
+      "description": "Financial transaction record"
+    },
+    {
+      "name": "Account",
+      "type": "entity",
+      "primary_key": "account_id", 
+      "description": "Bank account information"
+    },
+    {
+      "name": "AccountHolder",
+      "type": "entity",
+      "primary_key": null,
+      "parent_entity": "Account",
+      "description": "Account owner information"
+    },
+    {
+      "name": "Merchant",
+      "type": "entity", 
+      "primary_key": null,
+      "description": "Transaction merchant information"
+    }
+  ],
+  "suggested_schema": {
+    "transactions": {
+      "transaction_id": {"type": "STRING", "nullable": false, "description": "Unique transaction identifier"},
+      "account_id": {"type": "STRING", "nullable": false, "description": "Account identifier"},
+      "transaction_date": {"type": "TIMESTAMP", "nullable": false, "description": "Transaction timestamp"},
+      "transaction_type": {"type": "STRING", "nullable": false, "description": "Debit or credit"},
+      "amount": {"type": "FLOAT", "nullable": false, "description": "Transaction amount"}, 
+      "currency": {"type": "STRING", "nullable": false, "description": "Currency code"},
+      "description": {"type": "STRING", "nullable": true, "description": "Transaction description"},
+      "category": {"type": "STRING", "nullable": true, "description": "Transaction category"},
+      "balance_after": {"type": "FLOAT", "nullable": true, "description": "Account balance after transaction"},
+      "merchant_name": {"type": "STRING", "nullable": true, "description": "Merchant name"},
+      "merchant_mcc": {"type": "STRING", "nullable": true, "description": "Merchant category code"},
+      "merchant_city": {"type": "STRING", "nullable": true, "description": "Merchant city"},
+      "merchant_state": {"type": "STRING", "nullable": true, "description": "Merchant state"},
+      "merchant_country": {"type": "STRING", "nullable": true, "description": "Merchant country"},
+      "channel": {"type": "STRING", "nullable": true, "description": "Transaction channel"},
+      "card_present": {"type": "BOOLEAN", "nullable": true, "description": "Whether card was present"},
+      "recurring": {"type": "BOOLEAN", "nullable": true, "description": "Whether transaction is recurring"}
+    },
+    "accounts": {
+      "account_id": {"type": "STRING", "nullable": false, "description": "Account identifier"},
+      "account_number": {"type": "STRING", "nullable": false, "description": "Account number"},
+      "routing_number": {"type": "STRING", "nullable": false, "description": "Bank routing number"},
+      "account_holder_name": {"type": "STRING", "nullable": false, "description": "Account holder name"}
+    }
+  },
+  "confidence_scores": {
+    "schema_detection": 0.93,
+    "business_entity_detection": 0.90,
+    "data_type_inference": 0.95, 
+    "relationship_detection": 0.88
+  },
+  "potential_issues": [
+    {
+      "type": "sensitive_data",
+      "description": "Account numbers and routing numbers are sensitive PII",
+      "severity": "high",
+      "suggested_solution": "Consider masking or hashing sensitive fields"
+    },
+    {
+      "type": "nested_objects",
+      "description": "Account holder and merchant data nested in transactions",
+      "severity": "medium", 
+      "suggested_solution": "Normalize into separate accounts and merchants tables"
+    },
+    {
+      "type": "variable_metadata",
+      "description": "Metadata fields vary by transaction type and channel",
+      "severity": "low",
+      "suggested_solution": "Create flexible metadata schema or separate metadata table"
+    }
+  ]
+}
