@@ -3,11 +3,13 @@ from typing import Dict, List, Any, AsyncIterator
 from claude_code_sdk import ClaudeSDKClient, ClaudeCodeOptions
 import os
 import shutil
+from pathlib import Path
 
 class ClaudeETLAgent:
-    def __init__(self, work_dir: str = None, debug: bool = False):
+    def __init__(self, work_dir: str = None, debug: bool = True, mode: str = "automated"):
         self.debug = debug  # Debug flag to enable/disable tracing
         self.conversation_history = []  # Store conversation history for debugging
+        self.mode = mode  # "interactive" or "automated"
         
         # Use provided work directory or default to current directory
         working_directory = work_dir or os.getcwd()
@@ -17,221 +19,17 @@ class ClaudeETLAgent:
             working_directory = os.path.abspath(working_directory)
         
         print(f"🔧 ClaudeETLAgent initialized with working directory: {working_directory}")
+        print(f"🔧 Mode: {self.mode}")
+        
+        # Generate mode-specific system prompt
+        system_prompt = self._generate_system_prompt()
+        print(system_prompt)
         
         self.options = ClaudeCodeOptions(
-            system_prompt="""You are an expert data engineer specializing in JSON-to-BigQuery ETL pipelines. Your role is to analyze JSON data files and generate production-ready ETL solutions.
-
-## Core Capabilities
-- Analyze JSON file structures and infer optimal schemas
-- Generate standardized schema format for CSV/BigQuery validation  
-- Create ETL transformation code (Python/SQL)
-- Provide deployment guidance for Google Cloud Run
-
-## Context Framework
-
-### Project Context
-- **Tech Stack**: JSON → CSV (validation) → BigQuery (production) 
-- **Target Users**: Data analysts, product managers (non-technical)
-- **Deployment**: Google Cloud Run jobs
-
-### Required Output Format
-Always return structured JSON in this exact format:
-
-```json
-{
-  "entities": ["entity_name1", "entity_name2"],
-  "tables": {
-    "table_name": {
-      "fields": {
-        "field_name": {
-          "type": "string|integer|float|boolean|datetime|date|json",
-          "nullable": true|false,
-          "description": "Field description",
-          "csv_format": "string representation for CSV",
-          "bigquery_type": "BigQuery-specific type"
-        }
-      }
-    }
-  },
-  "transformations": {
-    "csv": {
-      "flattening_strategy": "prefix|separate_columns|json_string",
-      "array_handling": "comma_separated|multiple_rows|json_string"
-    }
-  },
-  "confidence": {
-    "overall": 0.0-1.0,
-    "entity_detection": 0.0-1.0,
-    "type_inference": 0.0-1.0,
-    "relationships": 0.0-1.0
-  }
-}
-```
-
-## Examples
-**Good Response**:
-<example>
-```json
-{
-  "entities": ["order", "customer", "product"],
-  "tables": {
-    "orders": {
-      "fields": {
-        "order_id": {
-          "type": "string",
-          "nullable": false,
-          "description": "Unique order identifier",
-          "csv_format": "string",
-          "bigquery_type": "STRING"
-        },
-        "customer_email": {
-          "type": "string", 
-          "nullable": false,
-          "description": "Customer email address",
-          "csv_format": "string",
-          "bigquery_type": "STRING"
-        }
-      }
-    },
-    "order_items": {
-      "fields": {
-        "order_id": {
-          "type": "string",
-          "nullable": false,
-          "description": "Foreign key to orders table",
-          "csv_format": "string", 
-          "bigquery_type": "STRING"
-        },
-        "product_id": {
-          "type": "string",
-          "nullable": false,
-          "description": "Product identifier",
-          "csv_format": "string",
-          "bigquery_type": "STRING"
-        },
-        "quantity": {
-          "type": "integer",
-          "nullable": false,
-          "description": "Quantity ordered",
-          "csv_format": "integer",
-          "bigquery_type": "INTEGER"
-        }
-      }
-    }
-  },
-  "transformations": {
-    "csv": {
-      "flattening_strategy": "separate_columns",
-      "array_handling": "multiple_rows"
-    }
-  },
-  "confidence": {
-    "overall": 0.85,
-    "entity_detection": 0.9,
-    "type_inference": 0.8,
-    "relationships": 0.85
-  }
-}
-```
-</example>
-
-**Why this is good:**
-- Properly flattens nested arrays into separate table
-- Uses correct data types based on content analysis
-- Includes meaningful descriptions for business users
-- Sets appropriate confidence scores
-- Follows exact schema format
-
-**Bad Response**:
-<example>
-```json
-{
-  "schema": {
-    "orders": [
-      {"name": "order_id", "type": "text"},
-      {"name": "items", "type": "json"}
-    ]
-  }
-}
-```
-</example>
-
-**Why this is bad:**
-- Wrong JSON structure (missing required fields)
-- Doesn't flatten nested arrays
-- Uses vague "text" instead of specific "string" type
-- No confidence scores or transformation guidance
-- Stores complex nested data as JSON instead of normalizing
-
-## Task Execution Protocol
-
-### STEP 1: JSON ANALYSIS & SCHEMA GENERATION
-- User should have uploaded JSON files, or ask where are the JSON files
-- Analyzes JSON structure, detects business entities, creates abstract schemas
-- Present the proposed schema to user with confidence scores
-- Ask for user approval/modifications before proceeding
-- Analyze patterns like:
-  - Nested objects and arrays requiring flattening
-  - Business entities and relationships
-  - Nullable vs required fields
-- Use descriptive field names and descriptions
-- Set confidence based on data quality and completeness
-- Save the schema to `schema.json`
-
-### STEP 2: SCHEMA VALIDATION & CSV GENERATION VALIDATION
-- Validated the user approved schema
-- Generate Python ETL code to transform JSON to CSV using validated schemas
-- Test the ETL code to generate CSV files
-- Show user the CSV preview and validation results
-- Clear transformation strategy for nested data
-- Error handling for malformed JSON
-- CSV output for local validation before BigQuery
-
-STEP 3: BIGQUERY PREPARATION
-- When CSV validation passes
-- Create BigQuery DDL from validated CSV schemas
-- Write DDL into `ddl.sql`
-- Generate production-ready ETL code for BigQuery loading
-- Show user the final BigQuery table structure
-
-STEP 4: DEPLOYMENT READINESS
-- Present complete pipeline: JSON → ETL Job → BigQuery
-
-## Guidelines
-
-**Data Type Mapping:**
-- JSON strings → `"type": "string"`, `"bigquery_type": "STRING"`
-- JSON numbers → `"type": "integer|float"`, `"bigquery_type": "INTEGER|FLOAT64"`  
-- JSON dates → `"type": "datetime"`, `"bigquery_type": "TIMESTAMP"`
-- JSON booleans → `"type": "boolean"`, `"bigquery_type": "BOOLEAN"`
-
-**Array Handling:**
-- Always flatten arrays into separate rows: `"array_handling": "multiple_rows"`
-- Create separate tables for nested object arrays
-- Use foreign keys to maintain relationships
-
-**Confidence Scoring:**
-- High confidence (0.8-1.0): Clear patterns, consistent data types
-- Medium confidence (0.5-0.7): Some ambiguity or missing data  
-- Low confidence (0.0-0.4): Inconsistent patterns, complex nesting
-
-**USER INTERACTION STYLE:**
-- Guide non-technical users (data analysts, product managers) through each step
-- Explain business impact of technical decisions  
-- Provide binary choices when possible ("Include partial records? Y/N")
-- Show confidence in your decisions with clear reasoning
-- Use the Smart Preview approach: show actual data transformations, not just schemas
-- Keep users informed about progress and next steps
-
-**TECHNICAL APPROACH:**
-- Validate each step before proceeding to next
-- Handle errors gracefully and guide user to solutions
-- Focus on the two-step validation: JSON → CSV / Python (local) → BigQuery / ETL Job (production)
-
-Ready to analyze your JSON files and generate schema-generator format output.""",
+            system_prompt=system_prompt,
             allowed_tools=["Bash", "Glob", "Grep", "LS", "Read", "Edit", "MultiEdit", "Write", "NotebookEdit", "WebFetch", "TodoWrite", "WebSearch", "BashOutput", "KillBash"],
             permission_mode="acceptEdits",
-            max_turns=5,
+            max_turns=15,
             model="claude-3-5-sonnet-20241022",
             cwd=working_directory,
             add_dirs=[working_directory]  # Also add the directory to context
@@ -241,6 +39,55 @@ Ready to analyze your JSON files and generate schema-generator format output."""
         self.client = None
         self.is_client_active = False
     
+    def _load_prompt_file(self, filename: str) -> str:
+        """Load prompt content from markdown file"""
+        try:
+            prompt_path = Path(__file__).parent.parent / "prompts" / filename
+            with open(prompt_path, 'r', encoding='utf-8') as f:
+                content = f.read().strip()
+                self._debug_log(f"Loaded prompt file: {filename} ({len(content)} chars)")
+                return content
+        except Exception as e:
+            self._debug_log(f"Error loading prompt file {filename}: {e}")
+            return f"Error loading prompt file {filename}: {e}"
+
+    def _generate_system_prompt(self) -> str:
+        """Generate system prompt based on the current mode"""
+        # Load base prompt
+        base_prompt = self._load_prompt_file("base_prompt.md")
+        
+        # Load mode-specific instructions
+        if self.mode == "automated":
+            execution_instructions = self._load_prompt_file("automated_mode.md")
+        else:  # interactive mode
+            execution_instructions = self._load_prompt_file("interactive_mode.md")
+        
+        # Combine prompts
+        full_prompt = f"{base_prompt}\n\n{execution_instructions}"
+
+        print(full_prompt)
+        
+        # Log the generated prompt for debugging
+        self._debug_log(f"Generated system prompt for mode '{self.mode}' ({len(full_prompt)} chars)")
+        if self.debug:
+            print(f"\n{'='*60}")
+            print(f"SYSTEM PROMPT FOR MODE: {self.mode.upper()}")
+            print(f"{'='*60}")
+            print(full_prompt[:500] + "..." if len(full_prompt) > 500 else full_prompt)
+            print(f"{'='*60}\n")
+        
+        return full_prompt
+
+    @classmethod
+    def create_automated_agent(cls, work_dir: str = None, debug: bool = False):
+        """Convenience method to create an agent in automated mode"""
+        return cls(work_dir=work_dir, debug=debug, mode="automated")
+    
+    @classmethod
+    def create_interactive_agent(cls, work_dir: str = None, debug: bool = False):
+        """Convenience method to create an agent in interactive mode"""
+        return cls(work_dir=work_dir, debug=debug, mode="interactive")
+
     async def _ensure_client(self):
         """Ensure we have an active Claude client for persistent conversations"""
         if not self.is_client_active or self.client is None:
@@ -274,7 +121,37 @@ Ready to analyze your JSON files and generate schema-generator format output."""
     def _debug_log(self, message: str):
         """Log debug messages if debug mode is enabled"""
         if self.debug:
-            print(f"[DEBUG] {message}")
+            timestamp = __import__('datetime').datetime.now().strftime("%H:%M:%S.%f")[:-3]
+            print(f"[{timestamp}] [DEBUG] {message}")
+    
+    def _log_message(self, message_type: str, content: Any, show_content: bool = True):
+        """Log messages with better formatting for tracing"""
+        timestamp = __import__('datetime').datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        
+        if self.debug:
+            print(f"\n[{timestamp}] [{message_type.upper()}]")
+            print("-" * 50)
+            
+            if show_content:
+                if isinstance(content, str):
+                    # Truncate very long strings for readability
+                    display_content = content[:500] + "..." if len(content) > 500 else content
+                    print(display_content)
+                elif isinstance(content, dict):
+                    # Show key information from dict
+                    if 'type' in content:
+                        print(f"Type: {content['type']}")
+                    if 'content' in content and isinstance(content['content'], str):
+                        display_content = content['content'][:300] + "..." if len(content['content']) > 300 else content['content']
+                        print(f"Content: {display_content}")
+                    else:
+                        print(f"Data: {str(content)[:300]}...")
+                else:
+                    print(str(content)[:300] + "..." if len(str(content)) > 300 else str(content))
+            else:
+                print(f"Content length: {len(str(content))} chars")
+            
+            print("-" * 50)
     
     def _add_to_history(self, message_type: str, content: Any):
         """Add message to conversation history for debugging"""
@@ -355,11 +232,9 @@ Ready to analyze your JSON files and generate schema-generator format output."""
     def _serialize_message(self, message) -> Dict[str, Any]:
         """Convert Claude message objects to JSON-serializable dictionaries"""
         try:
-            # Debug: Print the message type and attributes
-            print(f"Serializing message type: {type(message)}")
-            
             # Handle different message types based on their class names
             message_type = type(message).__name__
+            self._debug_log(f"Serializing {message_type}")
             
             if message_type == 'SystemMessage':
                 # Handle SystemMessage - has subtype and data fields
@@ -444,8 +319,8 @@ Ready to analyze your JSON files and generate schema-generator format output."""
                     }
                     
         except Exception as e:
-            print(f"Error serializing message: {e}")
-            print(f"Message type: {type(message)}")
+            error_msg = f"Error serializing {type(message).__name__}: {e}"
+            self._debug_log(error_msg)
             return {
                 'type': 'error',
                 'content': f"Error processing message: {str(e)}"
@@ -454,42 +329,42 @@ Ready to analyze your JSON files and generate schema-generator format output."""
     async def chat_stream(self, user_message: str) -> AsyncIterator[Dict[str, Any]]:
         """Stream chat responses for real-time interaction with persistent conversation"""
         
-        # Add user message to history for debugging
+        # Log user input
+        self._log_message('USER_INPUT', user_message)
         self._add_to_history('user_input', user_message)
-        self._debug_log(f"Sending user message: {user_message}")
         
         # Ensure we have an active client for multi-turn conversations
         await self._ensure_client()
         
         try:
             # Send user message to Claude using the persistent client
-            self._debug_log("Calling client.query()")
+            self._debug_log("Sending query to Claude...")
             await self.client.query(user_message)
             
             # Stream responses back
-            self._debug_log("Starting to receive response stream")
+            self._debug_log("Starting response stream...")
             response_count = 0
             async for message in self.client.receive_response():
                 response_count += 1
-                self._debug_log(f"Received response #{response_count}, type: {type(message).__name__}")
+                message_type = type(message).__name__
+                self._debug_log(f"Received response #{response_count}: {message_type}")
                 
                 # Serialize the message before yielding
                 serialized_message = self._serialize_message(message)
                 
+                # Log the response with better formatting
+                self._log_message('CLAUDE_RESPONSE', serialized_message, show_content=True)
+                
                 # Add to history for debugging
                 self._add_to_history('claude_response', serialized_message)
                 
-                self._debug_log(f"Yielding serialized message: {serialized_message.get('type', 'unknown')}")
                 yield serialized_message
                 
-            self._debug_log(f"Finished streaming. Total responses: {response_count}")
+            self._debug_log(f"Stream completed. Total responses: {response_count}")
                 
         except Exception as e:
             error_msg = f"Error in chat_stream: {e}"
-            print(error_msg)
-            self._debug_log(error_msg)
-            
-            # Add error to history
+            self._log_message('ERROR', error_msg)
             self._add_to_history('error', error_msg)
             
             # If there's an error, try to recover by creating a new client

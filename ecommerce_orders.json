@@ -1,0 +1,89 @@
+[
+  {
+    "order_id": "ORD-2024-001",
+    "customer_id": 12345,
+    "customer_email": "john.doe@example.com",
+    "order_date": "2024-01-15T10:30:00Z",
+    "status": "completed",
+    "total_amount": 156.78,
+    "currency": "USD",
+    "shipping_address": {
+      "street": "123 Main St",
+      "city": "San Francisco",
+      "state": "CA",
+      "zip_code": "94105",
+      "country": "US"
+    },
+    "items": [
+      {
+        "product_id": "PROD-001",
+        "product_name": "Wireless Headphones",
+        "category": "Electronics",
+        "quantity": 2,
+        "unit_price": 49.99,
+        "total_price": 99.98
+      },
+      {
+        "product_id": "PROD-002", 
+        "product_name": "Phone Case",
+        "category": "Accessories",
+        "quantity": 1,
+        "unit_price": 19.99,
+        "total_price": 19.99
+      }
+    ],
+    "payment": {
+      "method": "credit_card",
+      "last_four": "4567",
+      "transaction_id": "TXN-ABC123"
+    },
+    "shipping": {
+      "method": "standard",
+      "cost": 9.99,
+      "estimated_delivery": "2024-01-18T00:00:00Z"
+    }
+  },
+  {
+    "order_id": "ORD-2024-002",
+    "customer_id": 67890,
+    "customer_email": "jane.smith@example.com",
+    "order_date": "2024-01-16T14:22:00Z",
+    "status": "pending",
+    "total_amount": 89.99,
+    "currency": "USD",
+    "shipping_address": {
+      "street": "456 Oak Ave",
+      "city": "New York",
+      "state": "NY", 
+      "zip_code": "10001",
+      "country": "US"
+    },
+    "items": [
+      {
+        "product_id": "PROD-003",
+        "product_name": "Coffee Mug",
+        "category": "Kitchen",
+        "quantity": 3,
+        "unit_price": 12.99,
+        "total_price": 38.97
+      },
+      {
+        "product_id": "PROD-004",
+        "product_name": "Notebook Set",
+        "category": "Office",
+        "quantity": 2,
+        "unit_price": 15.99,
+        "total_price": 31.98
+      }
+    ],
+    "payment": {
+      "method": "paypal",
+      "transaction_id": "PP-XYZ789"
+    },
+    "shipping": {
+      "method": "express",
+      "cost": 19.04,
+      "estimated_delivery": "2024-01-17T00:00:00Z"
+    }
+  }
+]

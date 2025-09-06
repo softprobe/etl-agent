@@ -29,7 +29,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const [input, setInput] = useState('');
   const [isMultiLine, setIsMultiLine] = useState(false);
-  const [sessionStatus, setSessionStatus] = useState<{isActive: boolean, message: string} | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -41,49 +40,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // Check session status on mount
-  useEffect(() => {
-    const checkSessionStatus = async () => {
-      try {
-        const response = await (apiService as any).getChatStatus();
-        setSessionStatus({
-          isActive: response.is_active,
-          message: response.message
-        });
-      } catch (error) {
-        console.error('Failed to check session status:', error);
-      }
-    };
-    
-    if (isConnected) {
-      checkSessionStatus();
-    }
-  }, [isConnected]);
-
   const handleNewSession = async () => {
     try {
       await (apiService as any).startNewChatSession();
-      setSessionStatus({
-        isActive: true,
-        message: 'New conversation session started'
-      });
       // Send a system message to indicate new session
       onSendMessage('/new');
     } catch (error) {
       console.error('Failed to start new session:', error);
-    }
-  };
-
-  const handleCheckStatus = async () => {
-    try {
-      const response = await (apiService as any).getChatStatus();
-      setSessionStatus({
-        isActive: response.is_active,
-        message: response.message
-      });
-      onSendMessage('/status');
-    } catch (error) {
-      console.error('Failed to check session status:', error);
     }
   };
 
@@ -122,7 +85,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const getMessageStyle = (type: ChatMessage['type']) => {
     switch (type) {
       case 'user':
-        return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white ml-auto max-w-xs shadow-lg border border-blue-400';
+        return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white ml-auto max-w-2xl shadow-lg border border-blue-400';
       case 'assistant':
         return 'bg-gradient-to-br from-gray-50 to-white text-gray-900 mr-auto max-w-2xl shadow-md border border-gray-200';
       case 'error':
@@ -142,8 +105,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <Card>
+    <div className="w-full h-full flex flex-col">
+      <Card className="h-full flex flex-col">
         <CardHeader className="pb-6">
           <div className="flex items-start justify-between">
             <div>
@@ -202,8 +165,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </CardHeader>
 
         {/* Messages Container */}
-        <CardContent className="p-0">
-          <ScrollArea className="h-96 p-6">
+        <CardContent className="p-0 flex-1 min-h-0">
+          <ScrollArea className="h-full p-6">
             <div className="space-y-4">
           {messages.length === 0 ? (
             <div className="text-center py-12">
@@ -365,7 +328,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         </CardContent>
 
         {/* Input Form */}
-        <CardContent className="">
+        <CardContent className="flex-shrink-0">
           <div className="bg-gray-100 rounded-2xl p-4">
             <form onSubmit={handleSubmit} className="relative">
               <div className={isMultiLine ? "flex flex-col space-y-2" : "flex items-end space-x-2"}>

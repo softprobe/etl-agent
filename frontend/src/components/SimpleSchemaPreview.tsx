@@ -23,8 +23,8 @@ export const SimpleSchemaPreview: React.FC<SimpleSchemaPreviewProps> = ({
   const [isCollapsed, setIsCollapsed] = useState(false);
   if (schemas.length === 0) {
     return (
-      <div className="w-full max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
+      <div className="w-full h-full flex items-center justify-center p-6">
+        <div className="text-center">
           <Table className="mx-auto h-12 w-12 text-gray-300 mb-3" />
           <h3 className="text-sm font-medium text-gray-700 mb-1">
             No schema preview available
@@ -38,8 +38,8 @@ export const SimpleSchemaPreview: React.FC<SimpleSchemaPreviewProps> = ({
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
-      <Card>
+    <div className="w-full h-full flex flex-col">
+      <Card className="h-full flex flex-col">
         <CardHeader className="pb-6">
           <div className="flex items-center justify-between">
             <div>
@@ -68,9 +68,9 @@ export const SimpleSchemaPreview: React.FC<SimpleSchemaPreviewProps> = ({
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 flex-1 overflow-y-auto">
           {!isCollapsed && (
-            <div className="space-y-6 max-h-[50vh] overflow-y-auto">
+            <div className="space-y-6">
               {schemas.map((table) => (
               <Card key={table.name} className="p-6">
                 {/* Table Header */}
@@ -181,7 +181,7 @@ export const SimpleSchemaPreview: React.FC<SimpleSchemaPreviewProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="mt-8 flex gap-4 justify-center">
+          <div className="mt-8 flex gap-4 justify-center flex-shrink-0">
             <Button
               onClick={onApprove}
               disabled={loading}

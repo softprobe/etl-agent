@@ -28,9 +28,14 @@ async def startup_tasks():
     # Setup workspace with timestamp-based instance ID
     INSTANCE_ID, WORK_DIR = setup_workspace()
     
-    # Initialize Claude agent with workspace directory
-    claude_agent = ClaudeETLAgent(work_dir=str(WORK_DIR))
+    # Get mode from environment variable (default to automated)
+    mode = os.getenv("ETL_MODE", "automated")
+    
+    # Initialize Claude agent with workspace directory and mode
+    claude_agent = ClaudeETLAgent(work_dir=str(WORK_DIR), mode=mode, debug=True)
     print(f"🤖 Initialized Claude ETL Agent with workspace: {WORK_DIR}")
+    print(f"🤖 Mode: {mode}")
+    print(f"🤖 Debug logging: enabled")
 
 app.add_middleware(
     CORSMiddleware,
@@ -248,11 +253,42 @@ async def get_workspace_info():
         from .utils.workspace import get_workspace_info
         info = get_workspace_info(WORK_DIR) if WORK_DIR else {}
         info["instance_id"] = INSTANCE_ID
+        info["mode"] = claude_agent.mode if claude_agent else "unknown"
         return {"status": "success", "workspace": info}
     except Exception as e:
         return JSONResponse(
             status_code=500,
             content={"error": f"Failed to get workspace info: {str(e)}"}
+        )
+
+@app.post("/api/mode/switch")
+async def switch_mode(mode: str):
+    """Switch between interactive and automated modes"""
+    try:
+        global claude_agent
+        
+        if mode not in ["interactive", "automated"]:
+            return JSONResponse(
+                status_code=400,
+                content={"error": "Mode must be 'interactive' or 'automated'"}
+            )
+        
+        # Clean up current agent
+        if claude_agent:
+            await claude_agent.cleanup()
+        
+        # Create new agent with specified mode
+        claude_agent = ClaudeETLAgent(work_dir=str(WORK_DIR), mode=mode)
+        
+        return {
+            "status": "success", 
+            "message": f"Switched to {mode} mode",
+            "mode": mode
+        }
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"error": f"Failed to switch mode: {str(e)}"}
         )
 
 @app.get("/health")

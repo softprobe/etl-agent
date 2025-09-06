@@ -1,0 +1,200 @@
+{
+  "entities": ["order", "customer", "product", "order_item", "payment", "shipping"],
+  "tables": {
+    "orders": {
+      "fields": {
+        "order_id": {
+          "type": "string",
+          "nullable": false,
+          "description": "Unique order identifier",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "customer_id": {
+          "type": "integer",
+          "nullable": false,
+          "description": "Customer identifier",
+          "csv_format": "integer",
+          "bigquery_type": "INTEGER"
+        },
+        "customer_email": {
+          "type": "string",
+          "nullable": false,
+          "description": "Customer email address",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "order_date": {
+          "type": "datetime",
+          "nullable": false,
+          "description": "Order creation timestamp",
+          "csv_format": "datetime",
+          "bigquery_type": "TIMESTAMP"
+        },
+        "status": {
+          "type": "string",
+          "nullable": false,
+          "description": "Order status (completed, pending, etc.)",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "total_amount": {
+          "type": "float",
+          "nullable": false,
+          "description": "Total order amount",
+          "csv_format": "float",
+          "bigquery_type": "FLOAT64"
+        },
+        "currency": {
+          "type": "string",
+          "nullable": false,
+          "description": "Currency code (USD, EUR, etc.)",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "shipping_street": {
+          "type": "string",
+          "nullable": false,
+          "description": "Shipping address street",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "shipping_city": {
+          "type": "string",
+          "nullable": false,
+          "description": "Shipping address city",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "shipping_state": {
+          "type": "string",
+          "nullable": false,
+          "description": "Shipping address state/province",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "shipping_zip_code": {
+          "type": "string",
+          "nullable": false,
+          "description": "Shipping address postal code",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "shipping_country": {
+          "type": "string",
+          "nullable": false,
+          "description": "Shipping address country code",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "payment_method": {
+          "type": "string",
+          "nullable": false,
+          "description": "Payment method (credit_card, paypal, etc.)",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "payment_last_four": {
+          "type": "string",
+          "nullable": true,
+          "description": "Last four digits of credit card (if applicable)",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "payment_transaction_id": {
+          "type": "string",
+          "nullable": false,
+          "description": "Payment transaction identifier",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "shipping_method": {
+          "type": "string",
+          "nullable": false,
+          "description": "Shipping method (standard, express, etc.)",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "shipping_cost": {
+          "type": "float",
+          "nullable": false,
+          "description": "Shipping cost amount",
+          "csv_format": "float",
+          "bigquery_type": "FLOAT64"
+        },
+        "estimated_delivery": {
+          "type": "datetime",
+          "nullable": false,
+          "description": "Estimated delivery timestamp",
+          "csv_format": "datetime",
+          "bigquery_type": "TIMESTAMP"
+        }
+      }
+    },
+    "order_items": {
+      "fields": {
+        "order_id": {
+          "type": "string",
+          "nullable": false,
+          "description": "Foreign key to orders table",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "product_id": {
+          "type": "string",
+          "nullable": false,
+          "description": "Product identifier",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "product_name": {
+          "type": "string",
+          "nullable": false,
+          "description": "Product name",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "category": {
+          "type": "string",
+          "nullable": false,
+          "description": "Product category",
+          "csv_format": "string",
+          "bigquery_type": "STRING"
+        },
+        "quantity": {
+          "type": "integer",
+          "nullable": false,
+          "description": "Quantity ordered",
+          "csv_format": "integer",
+          "bigquery_type": "INTEGER"
+        },
+        "unit_price": {
+          "type": "float",
+          "nullable": false,
+          "description": "Unit price of product",
+          "csv_format": "float",
+          "bigquery_type": "FLOAT64"
+        },
+        "total_price": {
+          "type": "float",
+          "nullable": false,
+          "description": "Total price for this line item",
+          "csv_format": "float",
+          "bigquery_type": "FLOAT64"
+        }
+      }
+    }
+  },
+  "transformations": {
+    "csv": {
+      "flattening_strategy": "prefix",
+      "array_handling": "multiple_rows"
+    }
+  },
+  "confidence": {
+    "overall": 0.95,
+    "entity_detection": 0.95,
+    "type_inference": 0.95,
+    "relationships": 0.95
+  }
+}

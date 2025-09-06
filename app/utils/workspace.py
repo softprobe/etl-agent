@@ -54,8 +54,8 @@ def setup_workspace(base_dir: str = "workspace") -> tuple[str, Path]:
     instance_id, workspace_path = create_workspace_instance(base_dir)
     
     # Change to the workspace directory
-    os.chdir(workspace_path)
-    print(f"📁 Changed working directory to: {workspace_path}")
+    # os.chdir(workspace_path)
+    # print(f"📁 Changed working directory to: {workspace_path}")
     
     return instance_id, workspace_path
 
